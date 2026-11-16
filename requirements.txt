@@ -1,0 +1,20 @@
+# SysPanic v0.1.0 — synchronized development environment
+# Python >= 3.12 (verified on 3.14.10)
+# Install/sync: .venv/bin/pip install -r requirements.txt
+
+# Runtime — the PySide6 meta-package also requires the Pdf and WebEngine wheels;
+# SysPanic imports only QtCore, QtGui, and QtWidgets.
+PySide6==6.12.0
+PySide6_Addons==6.12.0
+PySide6_Essentials==6.12.0
+PySide6_Pdf==6.12.0.140
+PySide6_WebEngine==6.12.0.140
+shiboken6==6.12.0
+
+# Development and verification (transitive pins keep the environment reproducible)
+pytest==9.2.0
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+ruff==0.17.5

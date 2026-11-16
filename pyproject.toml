@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "syspanic"
+version = "0.1.0"
+description = "Don't panic. Diagnose. Local-only, evidence-cited Linux crash diagnostics."
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = ["PySide6==6.12.0"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "ruff==0.17.5"]
+
+[project.scripts]
+syspanic = "syspanic.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/syspanic"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["syspanic"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
