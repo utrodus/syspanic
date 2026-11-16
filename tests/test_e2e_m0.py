@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import tempfile
 
 import pytest
 from PySide6.QtCore import QEvent, Qt
@@ -48,14 +49,16 @@ def run_app_offscreen(*args: str) -> subprocess.CompletedProcess:
     env = dict(os.environ)
     env["QT_QPA_PLATFORM"] = "offscreen"
     env["PYTHONPATH"] = "src"
-    return subprocess.run(
-        [sys.executable, "-c", DRIVER, *args],
-        capture_output=True,
-        text=True,
-        timeout=60,
-        env=env,
-        check=False,
-    )
+    with tempfile.TemporaryDirectory(prefix="syspanic-e2e-") as cfg:
+        env["XDG_CONFIG_HOME"] = cfg
+        return subprocess.run(
+            [sys.executable, "-c", DRIVER, *args],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            env=env,
+            check=False,
+        )
 
 
 def test_cli_version_end_to_end():

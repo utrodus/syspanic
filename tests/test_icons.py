@@ -12,6 +12,8 @@ NAMES = [
     "file_text",
     "shield_check",
     "search",
+    "sun",
+    "moon",
 ]
 
 
