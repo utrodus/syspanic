@@ -1,0 +1,30 @@
+# Python bytecode / packaging
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches / coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Qt compiled / OS junk
+*.qmlc
+*.jsc
+.DS_Store
+Thumbs.db
+
+# Real crash evidence must never be committed (synthetic fixtures are allowed)
+*.vmcore
+vmcore-dmesg.txt
