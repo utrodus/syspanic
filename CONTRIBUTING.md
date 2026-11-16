@@ -68,12 +68,12 @@ src/syspanic/
   constants.py           app metadata, window/nav sizing, page names
   ui/
     main_window.py       sidebar, nav, QStackedWidget, footer, shortcuts, close handling
-    theme.py             design tokens + generated QSS, apply_theme()
-    icons.py             local QPainter outline icons (24x24, DPR-aware)
+    theme.py             dual-theme tokens, QPalette/QSS, ThemeManager, appearance preference
+    icons.py             local QPainter outline icons (24x24, DPR-aware), theme re-rendering
     pages/__init__.py    Overview + idle/empty-state pages
-    widgets/__init__.py  Card, PageHeader, EmptyState, capability_card, section_title
+    widgets/__init__.py  Card, PageHeader, EmptyState, ThemeSwitch, capability_card, section_title
 tests/                   conftest, test_args, test_smoke_import, test_smoke_gui,
-                         test_icons, test_e2e_m0
+                         test_icons, test_theme, test_e2e_m0
 docs/                    approved SoT + implementation tracker
 AGENTS.md  Memory.md  pyproject.toml  requirements.txt  LICENSE  README.md
 ```
@@ -215,8 +215,8 @@ requirement; do not guess at product intent — ask.
 
 ## Where to start
 
-M0 is `VERIFIED`. The next task is **M1 / T-003** (domain models + `validate_report()`), which
-**awaits explicit maintainer authorization** — do not begin without it. See the
+M0 is `VERIFIED` (dual-theme visual QA PASS 2026-11-16). The next task is **M1 / T-003**
+(domain models + `validate_report()`), authorized by the maintainer 2026-11-16. See the
 [tracker](docs/implementation-tracker.md) and [plan §2](docs/05-implementation-plan.md).
 
 ## License

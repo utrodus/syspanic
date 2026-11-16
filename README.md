@@ -15,7 +15,9 @@ privileges, or pretending to diagnose hardware it cannot test.
 ## Project status
 
 **Early development — v0.1.0 in progress.** The runnable desktop shell (milestone **M0**) is
-implemented and verified: a five-page dark window with designed idle/empty states. The
+implemented: a five-page window with designed idle/empty states and two themes — Dark (default)
+and Soft Light — switched globally from the sidebar and remembered between sessions. The
+dual-theme refinement passed manual visual QA (2026-11-16); M0 is verified. The
 diagnostic engine, collectors, timeline, evidence rendering, sanitization, and report export
 are **not yet implemented**. The boot selector and **Analyze** button are disabled placeholders,
 and `--demo` currently shows a persistent demo banner over those placeholder pages (packaged
