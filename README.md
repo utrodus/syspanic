@@ -174,7 +174,7 @@ Status is recorded in the [tracker](docs/implementation-tracker.md).
 | M0 | Runnable desktop shell | Verified |
 | M1 | Domain model + `validate_report()` | Implemented |
 | M2 | Safe bounded command runner | Implemented |
-| M3 | Boot enumeration + journal collection | Planned |
+| M3 | Boot enumeration + journal collection | Implemented |
 | M4 | System profile + crash artifacts | Planned |
 | M5 | Demo fixtures + demo collector | Planned |
 | M6 | Diagnostic engine (27 core rules) | Planned |

@@ -2,7 +2,7 @@
 
 Persistent, concise context for coding sessions. Subordinate to the approved Source of Truth (SoT);
 never overrides it. Detailed task progress lives in [docs/implementation-tracker.md](docs/implementation-tracker.md).
-Last updated: 2026-11-16 (M2/T-004 IMPLEMENTED_UNVERIFIED — automated PASS 162/162; M1 pushed `a0b475a`; M0 VERIFIED).
+Last updated: 2026-11-16 (M3 IMPLEMENTED_UNVERIFIED — automated PASS 219/219; M2 pushed `2501d26`; M0 VERIFIED).
 
 ## 1. Current Project Context
 
@@ -10,7 +10,7 @@ Last updated: 2026-11-16 (M2/T-004 IMPLEMENTED_UNVERIFIED — automated PASS 162
 - **Version target:** v0.1.0 (one-day MVP). **License:** MIT.
 - **Stack:** Python ≥3.12, PySide6 6.12 (Qt Widgets only); pytest + ruff as the only dev tools.
 - **Platform:** Linux desktop, Fedora KDE first (Wayland).
-- **Phase:** Implementation — M0 `VERIFIED` and pushed (`048e126`). M1 implemented and pushed (`eedff6d`…`a0b475a`). M2 implemented: T-004 `IMPLEMENTED_UNVERIFIED` (automated PASS 2026-11-16; pure logic, manual QA N/A). M3 awaiting authorization.
+- **Phase:** Implementation — M0 `VERIFIED` and pushed (`048e126`). M1 pushed (`eedff6d`…`a0b475a`), M2 pushed (`56d3129`…`2501d26`). M3 implemented: T-005/T-006 `IMPLEMENTED_UNVERIFIED` (automated PASS 2026-11-16; no GUI surface). M4 awaiting authorization.
 - **SoT status:** all six documents `Approved source of truth · 2026-11-16`; docs/03 carries the "Modern Diagnostic Workstation" visual revision plus the approved dual-theme revision (Dark + Soft Light, §2/§2.1); the three accuracy corrections below remain in force.
 
 ## 2. Established Decisions
@@ -32,8 +32,8 @@ User-approved 2026-11-16 (authoritative references in parentheses):
 
 No pending product decisions. Remaining gates are procedural:
 
-- M2 commit-and-push plan (3 grouped conventional commits → origin/main): awaiting maintainer approval; no repository writes before approval.
-- M3 authorization: explicit user command required before T-005/T-006. M2 acceptance met on automated checks (plan §2); later GUI QA pends to M8/M9.
+- M3 commit-and-push plan (3 grouped conventional commits → origin/main): awaiting maintainer approval; no repository writes before approval.
+- M4 authorization: offered 2026-11-16 after M3; user chose "Jangan dulu" — stop at M3 until an explicit M4 command. M3 acceptance met on automated checks (plan §2); collection-related GUI QA pends to M8/M9.
 
 ## 4. Environment Notes
 
@@ -66,6 +66,7 @@ Never include real host logs, identifiers, credentials, or dumps in this file.
 - Dual-theme wiring: `theme.tokens()` mirrors the last applied theme for construction-time lookups; `icons.set_icon(label, name, token, size)` tags QLabel properties and `icons.retheme(root)` re-renders them on `themeChanged` (no per-widget connections, no duplicates). Nav icons and the ThemeSwitch refresh via the same signal. `MainWindow(demo, theme_manager=None)` defaults to a session-only MemorySettings manager, so direct construction in tests never touches real QSettings; only `app.main()` in normal mode creates real QSettings. E2E subprocesses set `XDG_CONFIG_HOME` to a temp dir for isolation. pyproject `addopts="-q"` doubles with CLI `-q` and hides the pass summary — use `-o addopts=""` for a canonical count.
 - Domain layer (M1): `StrEnum` values mirror SoT strings exactly; frozen dataclasses with tuple fields; `validate_report(report, bundle=None)` aggregates all violations into one `ReportValidationError` (bundle param exists because demo-flag mismatch needs a second source of truth). `RULE_IDS` (29) lives in `domain/models.py` so the M6 registry can cross-check without circular imports. Excerpt bound enforced as ≤3 lines AND ≤300 chars per line (docs/02 §5 + docs/04 §10; docs/04 §2's "per reference" shorthand reads looser). `CollectionIssue(source, detail)` is a minimal shape — SoT names the type but not its fields. ruff UP017 wants `datetime.UTC`, not `timezone.utc`.
 - Runner (M2): `select` on stdout+stderr fds with 0.1 s slices keeps timeout/cancel responsive and drains large stderr without deadlock (storage capped at 4 KiB, but keep reading past the cap or the child blocks). Byte-cap hit → `TRUNCATED` + terminate child + `tail_reliable=False`; entry-cap truncation (`head_truncated=True`, tail reliable) belongs to the M3 journal collector, not the runner. `tail_reliable` is True only for clean AVAILABLE/EMPTY. Cancel maps to state ERROR + `cancelled` flag (SourceState has no cancelled value). ruff SIM105 wants `contextlib.suppress` for try/except/pass.
+- Boots/journal (M3): `normalize_boot_id` accepts undashed 32-hex or canonical 8-4-4-4-12 dashed UUID only — strip-all-dashes was too lenient (a trailing-dash test caught it). `--list-boots -o json` emits an array (new systemd) or JSON-lines (old) — handle both. Entry-cap truncation = retained+skipped == cap after clean exit → TRUNCATED head_truncated=True tail reliable; runner byte-cap TRUNCATED → tail unreliable. dmesg iso uses comma fractional seconds — `datetime.fromisoformat` handles it (3.11+); unsupported `--time-format` → plain dmesg fallback with timestamp-less entries. `JournalEntry`/`SliceParse`/`JournalPayload` are collector-level shapes (cursor lives only in JournalEntry); `EvidenceItem` stays the bundle currency. `BOOTS_MAX_BYTES` (1 MiB) is a chosen bound — SoT specifies journal/dmesg caps only.
 
 ## 6. Known Issues and Blockers
 
@@ -77,12 +78,12 @@ No other actionable issues.
 
 ## 7. Current Handoff
 
-- **Last completed work:** T-004 (M2) — `collectors/runner.py` bounded subprocess runner + `CommandResult` per docs/02 §7. IMPLEMENTED_UNVERIFIED: TDD RED→GREEN, ruff clean, 162/162 offscreen tests (23 new in tests/test_runner.py). M1 committed `eedff6d`…`a0b475a` and pushed.
-- **Active milestone/task:** none — M2 implemented; M3 not authorized.
-- **Next actionable step:** maintainer approves the M2 commit-and-push plan (3 commits → origin/main); then explicit authorization for M3 / T-005–T-006 (boot enumeration + journal collector).
-- **Required approvals:** M2 commit-and-push plan; M3 authorization; any design change beyond approved SoT needs user approval.
-- **Relevant files:** src/syspanic/collectors/{__init__,runner}.py, tests/test_runner.py; prior: domain/{enums,models}.py, tests/test_models.py, ui/theme.py.
-- **Verification state:** M0 all automated + manual QA PASS; M1/M2 automated PASS (manual N/A); later milestones' GUI QA pends to M8/M9.
+- **Last completed work:** T-005/T-006 (M3) — `collectors/{base,boots,journal}.py` + collection constants. IMPLEMENTED_UNVERIFIED: TDD RED→GREEN, ruff clean, 219/219 offscreen tests (57 new). M2 committed `56d3129`…`2501d26` and pushed.
+- **Active milestone/task:** none — M3 implemented; M4 not authorized.
+- **Next actionable step:** none authorized — M3 committed and pushed (approved 3-commit plan). Await explicit user authorization for M4 / T-007–T-008 (offered 2026-11-16, deferred).
+- **Required approvals:** M4 authorization (deferred by user 2026-11-16); any design change beyond approved SoT needs user approval.
+- **Relevant files:** src/syspanic/collectors/{base,boots,journal,runner}.py, src/syspanic/constants.py, tests/test_{boots,journal,journal_parse}.py; prior: domain/, ui/theme.py.
+- **Verification state:** M0 all automated + manual QA PASS; M1/M2 automated PASS (manual N/A); M3 automated PASS (collection GUI QA pends to M8/M9).
 
 ## Memory maintenance rules
 

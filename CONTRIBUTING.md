@@ -58,7 +58,7 @@ commands below and record the deviation; do not add alternatives that expand sco
 
 ## Repository layout
 
-**Present today (M0 shell + M1 domain + M2 runner):**
+**Present today (M0 shell + M1 domain + M2 runner + M3 boots/journal):**
 
 ```
 src/syspanic/
@@ -70,7 +70,10 @@ src/syspanic/
     enums.py             Severity, EvidenceStrength, SourceState, TimelineKind, ArtifactAssociation
     models.py            frozen dataclasses (docs/02 §5) + validate_report()
   collectors/
+    base.py              CollectionContext, CollectorResult, Collector protocol (docs/02 §6)
     runner.py            bounded subprocess run() + CommandResult (docs/02 §7)
+    boots.py             boot enumeration: JSON/text//proc fallbacks, normalization
+    journal.py           kernel+system slices, dedupe, truncation/tail reliability, dmesg
   ui/
     main_window.py       sidebar, nav, QStackedWidget, footer, shortcuts, close handling
     theme.py             dual-theme tokens, QPalette/QSS, ThemeManager, appearance preference
@@ -78,12 +81,13 @@ src/syspanic/
     pages/__init__.py    Overview + idle/empty-state pages
     widgets/__init__.py  Card, PageHeader, EmptyState, ThemeSwitch, capability_card, section_title
 tests/                   conftest, test_args, test_smoke_import, test_smoke_gui,
-                         test_icons, test_theme, test_e2e_m0, test_models, test_runner
+                         test_icons, test_theme, test_e2e_m0, test_models, test_runner,
+                         test_boots, test_journal, test_journal_parse
 docs/                    approved SoT + implementation tracker
 AGENTS.md  Memory.md  pyproject.toml  requirements.txt  LICENSE  README.md
 ```
 
-**Planned (M3–M7, not yet created):** remaining `collectors/` modules, `diagnostics/`, `report/`,
+**Planned (M4–M7, not yet created):** remaining `collectors/` modules, `diagnostics/`, `report/`,
 `demo_data/`, and the Qt-facing `ui/controller.py` / `ui/worker.py`. The target module map is in
 [architecture §3](docs/02-architecture.md) and [AGENTS.md §9](AGENTS.md). Do not document planned
 modules as if they already exist.
@@ -221,10 +225,10 @@ requirement; do not guess at product intent — ask.
 ## Where to start
 
 M0 is `VERIFIED` (dual-theme visual QA PASS 2026-11-16). **M1 / T-003** (domain models +
-`validate_report()`) and **M2 / T-004** (safe bounded command runner) are implemented with
-automated checks passing (162/162 offscreen tests; manual QA not applicable — pure logic).
-The next task is **M3 / T-005–T-006** (boot enumeration + journal collection), which awaits
-explicit maintainer authorization. See the
+`validate_report()`), **M2 / T-004** (safe bounded command runner), and **M3 / T-005–T-006**
+(boot enumeration + journal collection) are implemented with automated checks passing
+(219/219 offscreen tests). The next task is **M4 / T-007–T-008** (system profile + crash
+artifacts), which awaits explicit maintainer authorization. See the
 [tracker](docs/implementation-tracker.md) and [plan §2](docs/05-implementation-plan.md).
 
 ## License
