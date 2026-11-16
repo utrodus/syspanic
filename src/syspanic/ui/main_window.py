@@ -1,6 +1,7 @@
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
+    QApplication,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -31,14 +32,19 @@ from syspanic.ui.pages import (
     SystemInfoPage,
     TimelinePage,
 )
-from syspanic.ui.theme import TOKENS
+from syspanic.ui.theme import ThemeManager, tokens
+from syspanic.ui.widgets import ThemeSwitch
 
 NAV_ICONS = ("dashboard", "history", "file_search", "cpu", "file_text")
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, demo: bool = False):
+    def __init__(self, demo: bool = False, theme_manager: ThemeManager | None = None):
         super().__init__()
+        if theme_manager is None:
+            theme_manager = ThemeManager(QApplication.instance())
+            theme_manager.start()
+        self.theme_manager = theme_manager
         self.setWindowTitle(APP_NAME)
         self.setMinimumSize(QSize(*WINDOW_MIN_SIZE))
         self.resize(*WINDOW_DEFAULT_SIZE)
@@ -93,6 +99,16 @@ class MainWindow(QMainWindow):
             shortcut = QShortcut(QKeySequence(f"Ctrl+{row + 1}"), self)
             shortcut.activated.connect(lambda row=row: self.nav.setCurrentRow(row))
 
+        self.theme_manager.themeChanged.connect(self._on_theme_changed)
+
+    def _on_theme_changed(self, theme) -> None:
+        icons.retheme(self)
+        t = tokens()
+        for row, icon_name in enumerate(NAV_ICONS):
+            self.nav.item(row).setIcon(
+                icons.nav_icon(icon_name, t["text.secondary"], t["nav_selected_text"])
+            )
+
     def _build_sidebar(self) -> QWidget:
         sidebar = QWidget()
         sidebar.setObjectName("sidebar")
@@ -105,7 +121,8 @@ class MainWindow(QMainWindow):
         brand_row.setSpacing(10)
         brand_row.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         logo = QLabel()
-        logo.setPixmap(icons.pixmap("pulse", TOKENS["accent"], 22))
+        logo.setObjectName("brandLogo")
+        icons.set_icon(logo, "pulse", "accent", 22)
         brand = QLabel(APP_NAME)
         brand.setObjectName("brand")
         brand_row.addWidget(logo)
@@ -126,18 +143,22 @@ class MainWindow(QMainWindow):
         self.nav = QListWidget()
         self.nav.setObjectName("nav")
         self.nav.setIconSize(QSize(20, 20))
+        t = tokens()
         for name, icon_name in zip(PAGE_NAMES, NAV_ICONS, strict=True):
             item = QListWidgetItem(
-                icons.nav_icon(icon_name, TOKENS["text.secondary"], TOKENS["accent"]), name
+                icons.nav_icon(icon_name, t["text.secondary"], t["nav_selected_text"]), name
             )
             self.nav.addItem(item)
         layout.addWidget(self.nav, 1)
+
+        self.theme_switch = ThemeSwitch(self.theme_manager)
+        layout.addWidget(self.theme_switch)
 
         privacy_row = QHBoxLayout()
         privacy_row.setSpacing(8)
         privacy_row.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         lock = QLabel()
-        lock.setPixmap(icons.pixmap("shield_check", TOKENS["text.secondary"], 16))
+        icons.set_icon(lock, "shield_check", "text.secondary", 16)
         self.privacy = QLabel("Offline · Read-only")
         self.privacy.setObjectName("privacy")
         privacy_row.addWidget(lock)

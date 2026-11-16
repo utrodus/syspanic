@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
 )
 
 from syspanic.ui import icons
-from syspanic.ui.theme import TOKENS
 from syspanic.ui.widgets import Card, EmptyState, PageHeader, capability_card, section_title
 
 
@@ -54,7 +53,7 @@ class OverviewPage(ScrollPage):
         field = QHBoxLayout()
         field.setSpacing(8)
         field_icon = QLabel()
-        field_icon.setPixmap(icons.pixmap("history", TOKENS["text.secondary"], 16))
+        icons.set_icon(field_icon, "history", "text.secondary", 16)
         field_label = QLabel("Boot session")
         field_label.setObjectName("fieldLabel")
         field.addWidget(field_icon)

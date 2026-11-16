@@ -22,13 +22,18 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
+    from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QApplication
 
     from syspanic.ui.main_window import MainWindow
-    from syspanic.ui.theme import apply_theme
+    from syspanic.ui.theme import MemorySettings, ThemeManager
 
     app = QApplication([])
-    apply_theme(app)
-    window = MainWindow(demo=args.demo)
+    app.setOrganizationName(APP_NAME)
+    app.setApplicationName(APP_NAME)
+    settings = MemorySettings() if args.demo else QSettings()
+    theme_manager = ThemeManager(app, settings)
+    theme_manager.start()
+    window = MainWindow(demo=args.demo, theme_manager=theme_manager)
     window.show()
     return app.exec()

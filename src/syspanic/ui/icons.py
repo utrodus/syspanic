@@ -4,8 +4,13 @@ All glyphs are drawn in a consistent 24x24 coordinate system with a safe stroke 
 then scaled to the requested logical size and device pixel ratio so nothing clips.
 """
 
+import math
+
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QIcon, QPainter, QPainterPath, QPen, QPixmap, QPolygonF
+from PySide6.QtWidgets import QLabel
+
+from syspanic.ui import theme
 
 _BOX = 24.0
 _STROKE = 1.8
@@ -83,6 +88,22 @@ def _search(p: QPainter) -> None:
     p.drawLine(QPointF(15.2, 15.2), QPointF(20.5, 20.5))
 
 
+def _sun(p: QPainter) -> None:
+    p.drawEllipse(QPointF(12, 12), 4, 4)
+    for i in range(8):
+        angle = math.radians(i * 45)
+        dx, dy = math.cos(angle), math.sin(angle)
+        p.drawLine(QPointF(12 + 6 * dx, 12 + 6 * dy), QPointF(12 + 8.5 * dx, 12 + 8.5 * dy))
+
+
+def _moon(p: QPainter) -> None:
+    outer = QPainterPath()
+    outer.addEllipse(QRectF(3.5, 3.5, 17, 17))
+    bite = QPainterPath()
+    bite.addEllipse(QRectF(8, 3.5, 13, 13))
+    p.drawPath(outer.subtracted(bite))
+
+
 _DRAW = {
     "pulse": _pulse,
     "dashboard": _dashboard,
@@ -92,6 +113,8 @@ _DRAW = {
     "file_text": _file_text,
     "shield_check": _shield_check,
     "search": _search,
+    "sun": _sun,
+    "moon": _moon,
 }
 
 
@@ -119,3 +142,19 @@ def nav_icon(name: str, normal: str, selected: str) -> QIcon:
     icon.addPixmap(pixmap(name, normal), QIcon.Mode.Normal)
     icon.addPixmap(pixmap(name, selected), QIcon.Mode.Selected)
     return icon
+
+
+def set_icon(label: QLabel, name: str, token: str, size: int) -> None:
+    label.setProperty("iconName", name)
+    label.setProperty("iconToken", token)
+    label.setProperty("iconSize", size)
+    label.setPixmap(pixmap(name, theme.tokens()[token], size))
+
+
+def retheme(root) -> None:
+    t = theme.tokens()
+    for label in root.findChildren(QLabel):
+        name = label.property("iconName")
+        if name:
+            size = label.property("iconSize")
+            label.setPixmap(pixmap(name, t[label.property("iconToken")], size))
