@@ -172,7 +172,7 @@ Status is recorded in the [tracker](docs/implementation-tracker.md).
 | Milestone | Scope | Status |
 |---|---|---|
 | M0 | Runnable desktop shell | Verified |
-| M1 | Domain model + `validate_report()` | Planned |
+| M1 | Domain model + `validate_report()` | Implemented |
 | M2 | Safe bounded command runner | Planned |
 | M3 | Boot enumeration + journal collection | Planned |
 | M4 | System profile + crash artifacts | Planned |

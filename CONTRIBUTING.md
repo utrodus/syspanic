@@ -58,7 +58,7 @@ commands below and record the deviation; do not add alternatives that expand sco
 
 ## Repository layout
 
-**Present today (M0):**
+**Present today (M0 shell + M1 domain):**
 
 ```
 src/syspanic/
@@ -66,6 +66,9 @@ src/syspanic/
   __main__.py            module entry point
   app.py                 argparse (--demo, --version), QApplication, theme, MainWindow
   constants.py           app metadata, window/nav sizing, page names
+  domain/
+    enums.py             Severity, EvidenceStrength, SourceState, TimelineKind, ArtifactAssociation
+    models.py            frozen dataclasses (docs/02 §5) + validate_report()
   ui/
     main_window.py       sidebar, nav, QStackedWidget, footer, shortcuts, close handling
     theme.py             dual-theme tokens, QPalette/QSS, ThemeManager, appearance preference
@@ -73,12 +76,12 @@ src/syspanic/
     pages/__init__.py    Overview + idle/empty-state pages
     widgets/__init__.py  Card, PageHeader, EmptyState, ThemeSwitch, capability_card, section_title
 tests/                   conftest, test_args, test_smoke_import, test_smoke_gui,
-                         test_icons, test_theme, test_e2e_m0
+                         test_icons, test_theme, test_e2e_m0, test_models
 docs/                    approved SoT + implementation tracker
 AGENTS.md  Memory.md  pyproject.toml  requirements.txt  LICENSE  README.md
 ```
 
-**Planned (M1–M7, not yet created):** `domain/`, `collectors/`, `diagnostics/`, `report/`,
+**Planned (M2–M7, not yet created):** `collectors/`, `diagnostics/`, `report/`,
 `demo_data/`, and the Qt-facing `ui/controller.py` / `ui/worker.py`. The target module map is in
 [architecture §3](docs/02-architecture.md) and [AGENTS.md §9](AGENTS.md). Do not document planned
 modules as if they already exist.
@@ -215,8 +218,10 @@ requirement; do not guess at product intent — ask.
 
 ## Where to start
 
-M0 is `VERIFIED` (dual-theme visual QA PASS 2026-11-16). The next task is **M1 / T-003**
-(domain models + `validate_report()`), authorized by the maintainer 2026-11-16. See the
+M0 is `VERIFIED` (dual-theme visual QA PASS 2026-11-16). **M1 / T-003** (domain models +
+`validate_report()`) is implemented with automated checks passing (139/139 offscreen tests;
+manual QA not applicable — pure logic). The next task is **M2 / T-004** (safe bounded command
+runner), which awaits explicit maintainer authorization. See the
 [tracker](docs/implementation-tracker.md) and [plan §2](docs/05-implementation-plan.md).
 
 ## License

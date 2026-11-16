@@ -2,7 +2,7 @@
 
 Persistent, concise context for coding sessions. Subordinate to the approved Source of Truth (SoT);
 never overrides it. Detailed task progress lives in [docs/implementation-tracker.md](docs/implementation-tracker.md).
-Last updated: 2026-11-16 (M0 fully VERIFIED — dual-theme QA PASS; commit plan approved; M1/T-003 authorized by user).
+Last updated: 2026-11-16 (M1/T-003 IMPLEMENTED_UNVERIFIED — automated PASS 139/139; M0 VERIFIED and pushed; M2 awaiting authorization).
 
 ## 1. Current Project Context
 
@@ -10,7 +10,7 @@ Last updated: 2026-11-16 (M0 fully VERIFIED — dual-theme QA PASS; commit plan 
 - **Version target:** v0.1.0 (one-day MVP). **License:** MIT.
 - **Stack:** Python ≥3.12, PySide6 6.12 (Qt Widgets only); pytest + ruff as the only dev tools.
 - **Platform:** Linux desktop, Fedora KDE first (Wayland).
-- **Phase:** Implementation — M0 fully `VERIFIED` (dual-theme refinement: automated PASS + user visual QA PASS 2026-11-16; dark-shell functional + visual PASS earlier same day). **M1 authorized 2026-11-16** — T-003 next.
+- **Phase:** Implementation — M0 `VERIFIED` and pushed (`048e126`). M1 implemented: T-003 `IMPLEMENTED_UNVERIFIED` (automated PASS 2026-11-16; pure logic, manual QA N/A). M2 awaiting authorization.
 - **SoT status:** all six documents `Approved source of truth · 2026-11-16`; docs/03 carries the "Modern Diagnostic Workstation" visual revision plus the approved dual-theme revision (Dark + Soft Light, §2/§2.1); the three accuracy corrections below remain in force.
 
 ## 2. Established Decisions
@@ -30,10 +30,10 @@ User-approved 2026-11-16 (authoritative references in parentheses):
 
 ## 3. Pending Decisions
 
-No pending product decisions. All procedural gates closed 2026-11-16:
+No pending product decisions. Remaining gates are procedural:
 
-- Dual-theme visual QA: user PASS. Commit-and-push plan: maintainer approved (4 grouped commits → origin/main).
-- M1 authorization: granted by the user 2026-11-16. Next milestone gate: M1 acceptance criteria (plan §2); later GUI QA pends to M8/M9.
+- M1 commit-and-push plan (3 grouped conventional commits → origin/main): awaiting maintainer approval; no repository writes before approval.
+- M2 authorization: explicit user command required before T-004. M1 acceptance met on automated checks (plan §2); later GUI QA pends to M8/M9.
 
 ## 4. Environment Notes
 
@@ -64,6 +64,7 @@ Never include real host logs, identifiers, credentials, or dumps in this file.
 - Visual refinement: base `QWidget { background: transparent }` + explicit container backgrounds (canvas/sidebar/card) removes stray label rectangles; `QIcon` Normal/Selected modes give nav icon color states. Session controls moved into Overview but still exposed as `window.boot_selector`/`analyze_button` so existing tests/E2E keep passing.
 - Icon rendering fix: glyphs use a 24×24 coordinate system scaled by `physical/24`; set `QPixmap.setDevicePixelRatio(scale)` AFTER `painter.end()` — setting it before painting makes QPainter double-scale and clip at high-DPI/small sizes. Keep a stroke margin (paths within ~3..21, stroke 1.8) and verify bounds via alpha bbox in tests (tests/test_icons.py). Semantic names: dashboard/history/file_search/cpu/file_text/shield_check (+pulse/search/sun/moon).
 - Dual-theme wiring: `theme.tokens()` mirrors the last applied theme for construction-time lookups; `icons.set_icon(label, name, token, size)` tags QLabel properties and `icons.retheme(root)` re-renders them on `themeChanged` (no per-widget connections, no duplicates). Nav icons and the ThemeSwitch refresh via the same signal. `MainWindow(demo, theme_manager=None)` defaults to a session-only MemorySettings manager, so direct construction in tests never touches real QSettings; only `app.main()` in normal mode creates real QSettings. E2E subprocesses set `XDG_CONFIG_HOME` to a temp dir for isolation. pyproject `addopts="-q"` doubles with CLI `-q` and hides the pass summary — use `-o addopts=""` for a canonical count.
+- Domain layer (M1): `StrEnum` values mirror SoT strings exactly; frozen dataclasses with tuple fields; `validate_report(report, bundle=None)` aggregates all violations into one `ReportValidationError` (bundle param exists because demo-flag mismatch needs a second source of truth). `RULE_IDS` (29) lives in `domain/models.py` so the M6 registry can cross-check without circular imports. Excerpt bound enforced as ≤3 lines AND ≤300 chars per line (docs/02 §5 + docs/04 §10; docs/04 §2's "per reference" shorthand reads looser). `CollectionIssue(source, detail)` is a minimal shape — SoT names the type but not its fields. ruff UP017 wants `datetime.UTC`, not `timezone.utc`.
 
 ## 6. Known Issues and Blockers
 
@@ -75,12 +76,12 @@ No other actionable issues.
 
 ## 7. Current Handoff
 
-- **Last completed work:** T-002 dual-theme refinement (Dark + Soft Light, global switcher, QSettings appearance persistence) — VERIFIED: ruff clean, 79/79 offscreen tests pass (38 prior M0 + 41 new theme incl. contrast AA, persistence, demo isolation, 3 theme E2E); user manual visual QA of both themes PASS 2026-11-16. Dark-shell QA history preserved in the tracker.
-- **Active milestone/task:** M1 / T-003 (domain models + validate_report()) — authorized, starting after the refinement commits.
-- **Next actionable step:** execute the approved 4-commit plan + push origin/main; then mark T-003 IN_PROGRESS and implement with TDD per plan §2.
-- **Required approvals:** none pending for M1 start; any design change beyond approved SoT needs user approval; repository writes beyond the approved plan need a new command.
-- **Relevant files:** src/syspanic/ui/theme.py (ThemeManager/tokens), ui/widgets/ (ThemeSwitch), ui/icons.py (set_icon/retheme, sun/moon), ui/main_window.py, app.py, tests/test_theme.py, docs/03-ui-ux.md §2/§2.1.
-- **Verification state:** all M0 automated + manual QA PASS; later milestones' GUI QA pends to M8/M9.
+- **Last completed work:** T-003 (M1) — domain enums, frozen dataclasses (docs/02 §5), `validate_report()` + 29-ID catalog. IMPLEMENTED_UNVERIFIED: TDD RED→GREEN, ruff clean, 139/139 offscreen tests (60 new in tests/test_models.py). M0 refinement committed `173a760`…`048e126` and pushed.
+- **Active milestone/task:** none — M1 implemented; M2 not authorized.
+- **Next actionable step:** maintainer approves the M1 commit-and-push plan (3 commits → origin/main); then explicit authorization for M2 / T-004 (safe bounded command runner).
+- **Required approvals:** M1 commit-and-push plan; M2 authorization; any design change beyond approved SoT needs user approval.
+- **Relevant files:** src/syspanic/domain/{enums,models}.py, tests/test_models.py; prior: ui/theme.py, ui/widgets/ (ThemeSwitch), ui/icons.py, tests/test_theme.py, docs/03-ui-ux.md §2/§2.1.
+- **Verification state:** M0 all automated + manual QA PASS; M1 automated PASS (manual N/A); later milestones' GUI QA pends to M8/M9.
 
 ## Memory maintenance rules
 
