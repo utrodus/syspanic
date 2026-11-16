@@ -1,39 +1,81 @@
 # SysPanic — UI/UX Specification (v0.1.0)
 
-**Status:** Approved source of truth · 2026-11-16 (visual refinement revision: Modern Diagnostic Workstation, approved by user)
+**Status:** Approved source of truth · 2026-11-16 (visual refinement revision: Modern Diagnostic Workstation; dual-theme revision: Dark + Soft Light with global switcher, approved by user)
 **Framework:** PySide6 6.12, Qt Widgets (QtCore/QtGui/QtWidgets only)
 **Target:** 1920×1080 desktop; default 1440×900; minimum 1280×720
 
 ## 1. Direction
 
-**Modern Diagnostic Workstation** — a premium Linux developer tool in the spirit of Linear/Raycast/observability tools, without copying their interfaces. Deep charcoal layered surfaces; one restrained mint/teal accent; clear typography hierarchy; generous but purposeful spacing; consistent local outline iconography (QPainter or local assets, never emoji, never remote); polished hover/focus/selected/pressed/disabled states. No excessive gradients, shadows, decorative charts, or unnecessary effects; no animation beyond a determinate progress bar. Severity is conveyed by labeled badges plus color. Evidence is monospace and never rendered as rich text. Native KDE window decoration and normal window management are kept; no custom frameless title bar. Outline icons share a consistent 24×24 coordinate system with semantic glyphs (dashboard, history, file search, CPU, file text, shield check), rendered locally via QPainter with antialiasing, a safe stroke margin, and correct device-pixel-ratio handling so nothing clips at any size or scale.
+**Modern Diagnostic Workstation** — a premium Linux developer tool in the spirit of Linear/Raycast/observability tools, without copying their interfaces. Two approved themes share one visual identity: the original deep-charcoal **Dark** theme (default) and a premium low-glare **Soft Light** theme — soft neutral off-white surfaces, subtle layering, charcoal text, and a muted teal/emerald accent; never a default Qt light look, never pure-white large surfaces. One restrained mint/teal accent per theme; clear typography hierarchy; generous but purposeful spacing; consistent local outline iconography (QPainter or local assets, never emoji, never remote); polished hover/focus/selected/pressed/disabled states. No excessive gradients, shadows, decorative charts, or unnecessary effects; no animation beyond a determinate progress bar. Severity is conveyed by labeled badges plus color. Evidence is monospace and never rendered as rich text. Native KDE window decoration and normal window management are kept; no custom frameless title bar — decorations may follow the desktop's own theme. Outline icons share a consistent 24×24 coordinate system with semantic glyphs (dashboard, history, file search, CPU, file text, shield check, sun, moon), rendered locally via QPainter with antialiasing, a safe stroke margin, and correct device-pixel-ratio handling so nothing clips at any size or scale.
 
 The interface answers five questions in order: **What happened? (Overview) → When? (Timeline) → What is the proof? (Evidence) → What hardware/software context applies? (System Information) → What can I share? (Report).**
 
 ## 2. Design tokens
 
-| Token | Value |
-|---|---|
-| `bg.canvas` | `#101115` |
-| `bg.sidebar` | `#16181E` |
-| `bg.surface` | `#191B22` |
-| `bg.elevated` | `#23262F` |
-| `bg.nav_selected` | `#294238` |
-| `border.default` | `#30343D` |
-| `text.primary` | `#E7EBF1` |
-| `text.secondary` | `#98A1AF` |
-| `accent` | `#62D8B2` |
-| `accent.text` | `#101115` |
-| `severity.critical` | `#e5484d` |
-| `severity.warning` | `#f5a524` |
-| `severity.notice` | `#6e8efb` |
-| `severity.info` | `#8b949e` |
-| `state.success` | `#46a758` |
-| `state.error` | `#e5484d` |
+One semantic token set, two approved themes. **Dark is the default** when no valid preference exists. Soft Light uses off-white layered surfaces, charcoal text, and a muted emerald accent; pure white appears only as small text on the accent button. Values below are the single source for QPalette and QSS generation (`ui/theme.py`); widgets never hardcode colors.
 
-- **Type:** UI font `Inter` → `Noto Sans` → system sans; evidence font `JetBrains Mono` → `Noto Sans Mono` → `monospace`. Page heading 26–28px/600; section heading 16px/600; body 14px/400; metadata 12px; badges 11px/600 uppercase; evidence 13px. Accessible contrast; distinct disabled states. Respect system font scaling and high-DPI.
-- **Spacing:** 4 / 8 / 12 / 16 / 24 / 32. Content padding 24–32px. Card padding 20–24px. Navigation rows 40–44px. Controls ≥34px. Cards: subtle 1px border, 12px radius. Controls and navigation: 8px radius. Focus ring `accent`.
-- **Elevation:** layered surfaces plus 1px borders; no shadows, no gradients. Labels inherit their container background — no unintended widget rectangles.
+| Token | Dark | Soft Light |
+|---|---|---|
+| `bg.canvas` | `#101115` | `#F3F4F2` |
+| `bg.sidebar` | `#16181E` | `#E9ECE9` |
+| `bg.surface` | `#191B22` | `#FAFBF9` |
+| `bg.elevated` | `#23262F` | `#F0F3EF` |
+| `bg.nav_selected` | `#294238` | `#D8EAE2` |
+| `bg.code` | `#14161B` | `#F0F3EF` |
+| `border.default` | `#30343D` | `#D9DFDA` |
+| `border.hover` | `#3A3F4A` | `#B9C4BB` |
+| `text.primary` | `#E7EBF1` | `#26332E` |
+| `text.secondary` | `#98A1AF` | `#55645C` |
+| `text.muted` | `#8A93A4` | `#5F6E65` |
+| `accent` | `#62D8B2` | `#237A62` |
+| `accent.text` | `#101115` | `#FFFFFF` |
+| `accent.hover` | `#74E0BF` | `#1C6A54` |
+| `accent.pressed` | `#52C9A2` | `#175A47` |
+| `nav_selected_text` | `#62D8B2` | `#1B6B55` |
+| `nav.hover` | `#23262F` | `#DEE4DD` |
+| `control.hover` | `#2A2E38` | `#E4E9E3` |
+| `control.pressed` | `#191B22` | `#DCE2DB` |
+| `focus.ring` | `#62D8B2` | `#237A62` |
+| `disabled.fg` | `#5C6470` | `#9AA69D` |
+| `disabled.bg` | `#191B22` | `#F0F3EF` |
+| `disabled.border` | `#262A33` | `#E2E7E1` |
+| `input.bg` | `#23262F` | `#F0F3EF` |
+| `input.selection` | `#294238` | `#D8EAE2` |
+| `input.selection_text` | `#E7EBF1` | `#26332E` |
+| `scrollbar.track` | transparent | transparent |
+| `scrollbar.thumb` | `#30343D` | `#B4BFB5` |
+| `scrollbar.thumb_hover` | `#3A3F4A` | `#97A69B` |
+| `tooltip.bg` | `#23262F` | `#FAFBF9` |
+| `tooltip.text` | `#E7EBF1` | `#26332E` |
+| `tooltip.border` | `#30343D` | `#D9DFDA` |
+| `severity.critical` | `#e5484d` | `#B3261E` |
+| `severity.critical.bg` | `#261216` | `#F7E4E2` |
+| `severity.warning` | `#f5a524` | `#8A5D00` |
+| `severity.warning.bg` | `#3A2E14` | `#F6ECD4` |
+| `severity.notice` | `#6e8efb` | `#3D5A99` |
+| `severity.notice.bg` | `#232A44` | `#E3E9F7` |
+| `severity.info` | `#8b949e` | `#566159` |
+| `severity.info.bg` | `#262A33` | `#E9ECE9` |
+| `state.success` | `#46a758` | `#1B7230` |
+| `state.success.bg` | `#16281B` | `#E1F0E4` |
+| `state.warning` | `#f5a524` | `#8A5D00` |
+| `state.warning.bg` | `#3A2E14` | `#F6ECD4` |
+| `state.error` | `#e5484d` | `#B3261E` |
+| `state.error.bg` | `#261216` | `#F7E4E2` |
+
+Accessibility adjustments (approved): Soft Light `text.secondary`, `text.muted`, `accent`, `nav_selected_text`, and the severity/state foregrounds were deepened from the initial proposal so normal text meets WCAG AA (≥4.5:1) on every surface it appears on; dark severity/state tint backgrounds were chosen for the same reason. Severity colors are theme-specific, never shared. Disabled controls are exempt from AA but must stay distinguishable.
+
+- **Type:** UI font `Inter` → `Noto Sans` → system sans; evidence font `JetBrains Mono` → `Noto Sans Mono` → `monospace`. Page heading 26–28px/600; section heading 16px/600; body 14px/400; metadata 12px; badges 11px/600 uppercase; evidence 13px. Accessible contrast; distinct disabled states. Respect system font scaling and high-DPI. Identical in both themes.
+- **Spacing:** 4 / 8 / 12 / 16 / 24 / 32. Content padding 24–32px. Card padding 20–24px. Navigation rows 40–44px. Controls ≥34px. Cards: subtle 1px border, 12px radius. Controls and navigation: 8px radius. Focus ring `focus.ring`. Identical in both themes — switching never changes layout dimensions.
+- **Elevation:** layered surfaces plus 1px borders; no shadows, no gradients. Labels inherit their container background — no unintended widget rectangles in either theme.
+
+### 2.1 Theme switching and persistence
+
+- A compact segmented **Light / Dark** control (sun/moon outline icons) sits near the bottom of the sidebar, above the privacy indicator. Both choices are keyboard reachable with accessible names and tooltips; the active choice uses `bg.nav_selected` + `nav_selected_text`.
+- Switching applies immediately in place via one centralized theme manager (`ui/theme.py`): application-wide QPalette + QSS regenerated from the active token set, themed QPainter icons re-rendered. No restart, no QApplication/window recreation; selected page, boot selection, and control states are preserved; repeated switching creates no duplicate widgets or connections.
+- Persistence: `QSettings` with organization/application `SysPanic`/`SysPanic`, single key `appearance/theme` ∈ {`light`, `dark`}. Missing, invalid, or unreadable preferences fall back to Dark. A write failure never blocks switching in the current session. This appearance preference is the **only** persisted setting — never diagnostic data, journal content, artifacts, or identifiers; no database, settings framework, or separate settings page.
+- Demo mode (`--demo`) starts Dark deterministically and switches session-only via an in-memory store; it never reads or writes real user preferences. Automated tests use isolated temporary or injected stores.
+- No system-theme synchronization in v0.1.0. Native KDE title bar/decorations are kept and may follow the desktop's own theme.
 
 ## 3. Window structure
 
@@ -51,6 +93,7 @@ The interface answers five questions in order: **What happened? (Overview) → W
 │ [ic] System… │                                                            │
 │ [ic] Report  │                                                            │
 │              │                                                            │
+│ [Light|Dark] │                                                            │
 │ [shield]     │                                                            │
 │ Offline ·    │                                                            │
 │ Read-only    │                                                            │
@@ -59,7 +102,7 @@ The interface answers five questions in order: **What happened? (Overview) → W
 └───────────────────────────────────────────────────────────────────────────┘
 ```
 
-- Sidebar ≈224px fixed (`bg.sidebar`): product identity with a simple activity/pulse outline icon; tagline (hidden below 1360px window width); `WORKSPACE` section label; five navigation rows 40–44px tall with consistent 18–20px outline icons; rounded selected state (`bg.nav_selected`, restrained accent); hover, focus, selected, and pressed states; a privacy indicator near the bottom (shield-check icon + `Offline · Read-only`). The phrase `Local only` appears only in the footer, not duplicated in the sidebar. No emoji icons.
+- Sidebar ≈224px fixed (`bg.sidebar`): product identity with a simple activity/pulse outline icon; tagline (hidden below 1360px window width); `WORKSPACE` section label; five navigation rows 40–44px tall with consistent 18–20px outline icons; rounded selected state (`bg.nav_selected`, `nav_selected_text`); hover, focus, selected, and pressed states; a compact Light/Dark appearance switcher (§2.1) near the bottom; a privacy indicator below it (shield-check icon + `Offline · Read-only`). The phrase `Local only` appears only in the footer, not duplicated in the sidebar. No emoji icons.
 - No top header bar: session controls (boot selector, Analyze) live in the Overview **Analysis session** card (§4).
 - Content: `QStackedWidget`; each page is a scroll area with 24–32px padding, a page heading + descriptive subtitle, and consistently aligned cards/sections. No tabs.
 - Footer ≈32px status bar: privacy statement, state, version; readable, aligned, visually separated from content. Never displays hostname or username.
@@ -201,7 +244,7 @@ Missing values render `Not available` with a muted reason; never an invented val
 
 ## 9. Accessibility and resizing
 
-- Text contrast: primary on base ≥ 12:1; muted on surface ≥ 5:1; badge text on tinted background ≥ 4.5:1.
+- Text contrast in **both themes**: normal text ≥ 4.5:1 (WCAG AA); primary on canvas ≥ 11:1; muted on surface ≥ 4.5:1; badge text on tinted background ≥ 4.5:1; accent and focus ring against adjacent surfaces ≥ 3:1. Automated contrast tests enforce the token pairs.
 - Severity always includes a text label; color is supplementary.
 - Focus visible on every interactive control; no focus traps; nav items are keyboard reachable.
 - Minimum navigation row height 40px and control height 34px; evidence text never below 11px.
@@ -210,4 +253,4 @@ Missing values render `Not available` with a muted reason; never an invented val
 
 ## 10. Explicit UI exclusions
 
-No QML, WebEngine, chart library, external icon pack (local QPainter/asset outline icons only), light theme, onboarding wizard, settings dialog, notification tray integration, or auto-refresh polling. No rendered Markdown/HTML preview; the raw sanitized text is the source of truth.
+No QML, WebEngine, chart library, external icon pack (local QPainter/asset outline icons only), onboarding wizard, settings dialog or separate settings page, system-theme synchronization, notification tray integration, or auto-refresh polling. No rendered Markdown/HTML preview; the raw sanitized text is the source of truth. The only appearance control is the sidebar Light/Dark switcher (§2.1).

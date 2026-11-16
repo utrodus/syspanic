@@ -10,7 +10,7 @@
 | Linux desktop, Fedora KDE first, systemd journal assumed | Collectors target `journalctl` + `/proc` + `/sys`; no distribution packages, no non-systemd log paths |
 | Never root, never sudo | Read access is whatever the user already has; denial is a first-class state |
 | Offline, privacy-first | No network imports, no telemetry, no temp files, no log persistence |
-| Read-only | Only user-chosen report export writes to disk |
+| Read-only | Only user-chosen report export and the local appearance preference (`appearance/theme`) write to disk |
 | Python + PySide6 Qt Widgets | QtCore/QtGui/QtWidgets only; no QML, WebEngine, or third-party UI kits |
 | One-day MVP | Single-process desktop app; synchronous engine, one background worker; no async framework |
 | MIT project, LGPL-compatible deps | PySide6/Qt LGPLv3 used as a dynamically linked wheel; pytest/ruff are MIT |
@@ -77,8 +77,7 @@ src/syspanic/
     main_window.py         header, nav, QStackedWidget, footer, close handling
     controller.py          Qt-facing state machine, worker lifecycle, stale detection
     worker.py              QObject worker in a QThread; progress/cancel signals
-    theme.py               design tokens
-    theme.qss              Qt stylesheet
+    theme.py               dual-theme tokens, QPalette/QSS generation, ThemeManager, appearance preference (QSettings)
     pages/
       overview.py, timeline.py, evidence.py, system_info.py, report.py
     widgets/
@@ -216,6 +215,7 @@ Known mapping: `FileNotFoundError` → `not_found`; `PermissionError` or stderr 
 - No network modules, no auto-update, no crash reporting, and no transmission of real host logs, crash dumps, or screenshots to coding agents, AI APIs, or external services.
 - Log content is untrusted: plain-text widgets only, no HTML/rich-text rendering, control characters stripped, Markdown excerpts fenced.
 - Reports are best-effort sanitized before they reach disk; raw evidence is never exported; preview is mandatory.
+- The only persisted setting is the appearance preference: QSettings organization/application `SysPanic`/`SysPanic`, key `appearance/theme` ∈ {`light`, `dark`}; missing/invalid/unreadable falls back to Dark; write failures never block session switching. Demo mode uses a session-only in-memory store and never writes real preferences; automated tests use isolated stores. No diagnostic data is ever persisted.
 - The default boot is the current boot; absence-based findings require a completed boot with a reliably collected journal tail.
 
 ## 11. Sanitization and report boundary
@@ -226,7 +226,7 @@ Retained by design: boot IDs, PCI addresses, kernel version, timestamps, EDAC/MC
 
 ## 12. Demo mode
 
-`PYTHONPATH=src .venv/bin/python -m syspanic --demo` uses `DemoCollector` to load `src/syspanic/demo_data/` via `importlib.resources`, producing a normal `CollectionBundle` with `demo=True`. No system probing occurs. UI and report show `DEMO DATA — not collected from this machine`. The bundled fixtures are the same synthetic files used by the integration test, including artifact association metadata (see [04-diagnostics.md](04-diagnostics.md)).
+`PYTHONPATH=src .venv/bin/python -m syspanic --demo` uses `DemoCollector` to load `src/syspanic/demo_data/` via `importlib.resources`, producing a normal `CollectionBundle` with `demo=True`. No system probing occurs. UI and report show `DEMO DATA — not collected from this machine`. The bundled fixtures are the same synthetic files used by the integration test, including artifact association metadata (see [04-diagnostics.md](04-diagnostics.md)). Demo appearance is isolated too: it starts Dark deterministically and theme switching is session-only, never reading or writing real user preferences.
 
 ## 13. Dependencies and packaging
 
@@ -270,6 +270,7 @@ No real host logs, no network, no display automation, no pytest-qt. Tests use `t
 | D-11 | One packaged synthetic fixture set shared by demo and tests | No fixture drift; QA without hardware crashes |
 | D-12 | Fixed allowlist, regular-file artifact paths, bounded incident subdirs, no binary vmcore, association-gated corroboration | Read-only, least-privilege collection with honest artifact claims |
 | D-13 | Final corrections (approved 2026-11-16): kernel signatures require `_TRANSPORT=kernel` only; systemd markers use trusted process/unit metadata; `dmesg` is current-boot-only (`unsupported` for historical boots); artifact `matched` requires proven boot identity — timestamp + kernel release alone is `possibly_related` | Spoofable identifiers and unproven associations must not drive findings |
+| D-14 | Dual theme (approved 2026-11-16, refines T-002): Dark default + Soft Light, one centralized ThemeManager, shared QSS structure with per-theme tokens, global sidebar Light/Dark switcher, immediate in-place application; single QSettings `appearance/theme` persistence exception; demo session-only | Comfortable prolonged use in bright environments without redesigning the approved dark identity or weakening the no-persistence rule |
 
 ## 16. Explicit exclusions
 

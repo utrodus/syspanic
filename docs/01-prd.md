@@ -60,12 +60,12 @@ Each requirement is testable and owned by one page or module. Page names match [
 ## 6. Accuracy, privacy, and security requirements
 
 - **Accuracy:** deterministic rules only; no confidence percentages; no component-defect claims; no PSU or power-loss inference from missing markers; kernel-only signatures require `_TRANSPORT=kernel` journal metadata; shutdown absence requires a reliably collected tail; current inventory is never presented as crash-time data; artifact corroboration requires a confirmed boot association. Full contract: [04-diagnostics.md](04-diagnostics.md).
-- **Privacy:** all analysis is local; reports are best-effort redacted before preview/export, and preview is mandatory; real logs, crash dumps, serials, hostnames, or screenshots are never committed and never transmitted to coding agents, AI APIs, or external services; automated verification uses synthetic fixtures only.
+- **Privacy:** all analysis is local; reports are best-effort redacted before preview/export, and preview is mandatory; real logs, crash dumps, serials, hostnames, or screenshots are never committed and never transmitted to coding agents, AI APIs, or external services; automated verification uses synthetic fixtures only. The only persisted preference is the local appearance choice (`appearance/theme` via QSettings); no diagnostic data, journal content, artifacts, or identifiers are ever stored, and demo mode never writes real preferences.
 - **Security:** never run as root, never invoke sudo, never modify journal configuration, groups, or system permissions; subprocesses use argv arrays, `shell=False`, timeouts, and bounded output; collection runs off the UI thread. Full contract: [02-architecture.md](02-architecture.md) and [AGENTS.md](../AGENTS.md).
 
 ## 7. UX requirements
 
-Desktop-first for 1920×1080, usable at 1280×720. Five pages — Overview, Timeline, Evidence, System Information, Report — in a single window with a persistent boot selector, Analyze action, coverage status, and "Local only" footer. Restrained dark theme, native widgets, no decorative imagery. Loading, empty, error, permission-denied, incomplete-evidence, tail-uncertain, cancelled, stale-results, and demo states are specified in [03-ui-ux.md](03-ui-ux.md).
+Desktop-first for 1920×1080, usable at 1280×720. Five pages — Overview, Timeline, Evidence, System Information, Report — in a single window with a persistent boot selector, Analyze action, coverage status, and "Local only" footer. Dark (default) and Soft Light themes with a global sidebar switcher, immediate in-place switching, and local persistence of the appearance choice only; native widgets, no decorative imagery. Loading, empty, error, permission-denied, incomplete-evidence, tail-uncertain, cancelled, stale-results, and demo states are specified in [03-ui-ux.md](03-ui-ux.md).
 
 ## 8. v0.1.0 definition of done
 

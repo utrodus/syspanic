@@ -43,7 +43,7 @@ Dependency order is strict. Each task ends with its tests passing and `ruff chec
 | Task | Work | Acceptance | Tests |
 |---|---|---|---|
 | **T-001** | `pyproject.toml`, `src/syspanic/{__init__,__main__,app,constants}.py`, placeholder `MainWindow`, `--demo` flag parsed | `python -m syspanic` opens a window titled `SysPanic`; `--version`/`--demo` parse; package imports | import smoke |
-| **T-002** | Theme tokens + QSS, header (tagline, disabled boot selector, Analyze), 200px nav, 5-page `QStackedWidget`, footer, 1280×720 minimum | Nav switches all five pages; window matches [03-ui-ux.md](03-ui-ux.md) skeleton; no crash at minimum size; automated verification is offscreen only, real GUI execution is manual | `tests/test_smoke_gui.py` (offscreen) |
+| **T-002** | Dual-theme tokens + shared QSS/QPalette (Dark default + Soft Light), centralized `ThemeManager`, sidebar branding/tagline + Light/Dark switcher, disabled boot selector + Analyze in the Overview session card, ≈224px nav, 5-page `QStackedWidget`, footer, 1280×720 minimum, QSettings `appearance/theme` persistence (demo session-only) | Nav switches all five pages; window matches [03-ui-ux.md](03-ui-ux.md) skeleton; theme switches immediately in place, preserves page/control state, persists and restores across restart (isolated settings in tests); Dark default on missing/invalid/unreadable preference; write failures degrade gracefully; demo never writes real preferences; no crash at minimum size; automated verification is offscreen only, real GUI execution is manual | `tests/test_smoke_gui.py`, `tests/test_theme.py`, `tests/test_icons.py` (offscreen) |
 
 **Milestone gate:** the first milestone is a runnable minimal PySide6 app with verified setup and passing offscreen smoke.
 
@@ -153,7 +153,7 @@ All tests use generated text, `tmp_path`, or packaged synthetic demo fixtures. N
 
 Run as the normal desktop user, never root.
 
-1. `PYTHONPATH=src .venv/bin/python -m syspanic` — window opens at 1440×900, dark theme, five nav entries, footer says `Local only`.
+1. `PYTHONPATH=src .venv/bin/python -m syspanic` — window opens at 1440×900, dark theme by default, five nav entries, Light/Dark switcher above the sidebar privacy indicator, footer says `Local only`.
 2. Resize to 1280×720 — no clipped controls, tagline hidden, pages scroll.
 3. Select the current boot, press Analyze — progress appears, window can be dragged, Analyze becomes Cancel; pages populate.
 4. Cancel a second run — footer shows `Collection cancelled.` and previous results remain.
@@ -167,6 +167,9 @@ Run as the normal desktop user, never root.
 12. `--demo` — demo banner visible, both boots analyzable, core expected findings appear; deferred ART-002/ART-003 may be absent, and the report begins with the demo notice.
 13. Keyboard: Ctrl+1..5, Ctrl+R, Ctrl+E, F5, Esc during collection.
 14. Close during collection — cancel is requested; if the worker has not stopped, the window stays open with `Finishing collection before closing…` and closes only after acknowledgment; never a forced thread teardown.
+15. Appearance: switch to Light — the whole shell (sidebar, cards, controls, footer, icons, empty states) restyles immediately with no dark rectangles, no layout shift, and the current page preserved; switch back to Dark and repeat several times; keyboard (Tab + Space) reaches and activates both choices; tooltips and active state are clear.
+16. Appearance persistence: select Light, close, relaunch — Light is restored; select Dark, relaunch — Dark is restored. At 1280×720 and with high-DPI scaling, both themes stay readable with no clipped icons or text.
+17. Demo isolation: `--demo` starts Dark; switching themes works for the session, and after closing, the normal-mode preference is unchanged (demo never writes real settings).
 
 Report results per milestone; screenshots optional and must not contain personal data.
 
