@@ -1,0 +1,14 @@
+[
+  {
+    "index": -1,
+    "boot_id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+    "first_entry": 1794297600000000,
+    "last_entry": 1794301200000000
+  },
+  {
+    "index": 0,
+    "boot_id": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+    "first_entry": 1794816000000000,
+    "last_entry": 1794821400000000
+  }
+]

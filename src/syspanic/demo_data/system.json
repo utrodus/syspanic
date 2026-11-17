@@ -1,0 +1,24 @@
+{
+  "os_name": "Fedora Linux",
+  "os_version_id": "44",
+  "kernel": "6.17.8-300.fc44.x86_64",
+  "arch": "x86_64",
+  "cpu_model": "AMD Ryzen 9 7950X 16-Core Processor",
+  "cpu_cores": 16,
+  "mem_total_kib": 32768000,
+  "collected_at": "2026-11-16T09:30:00+00:00",
+  "microcode": "0xa601203",
+  "gpus": [
+    {
+      "pci_address": "0000:0a:00.0",
+      "vendor": "Advanced Micro Devices, Inc.",
+      "model": "Navi 21",
+      "driver": "amdgpu"
+    }
+  ],
+  "bios_vendor": "American Megatrends International, LLC.",
+  "bios_version": "F.32",
+  "bios_date": "07/15/2025",
+  "board_vendor": "ASUSTeK COMPUTER INC.",
+  "board_name": "ROG STRIX X670E-E GAMING WIFI"
+}
