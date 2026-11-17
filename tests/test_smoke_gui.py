@@ -101,11 +101,11 @@ def test_overview_idle_headline(window):
     assert headline.text() == "Every crash leaves a clue."
 
 
-def test_session_hint_explains_placeholder(window):
+def test_session_hint_readonly_local(window):
     overview = window.stack.widget(0)
     hint = overview.findChild(QLabel, "sessionHint")
     assert hint is not None
-    assert "placeholder" in hint.text().lower()
+    assert "read-only" in hint.text().lower()
 
 
 def test_each_page_has_heading_and_subtitle(window):

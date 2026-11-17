@@ -196,7 +196,7 @@ def test_page_and_placeholder_state_preserved_across_switch(window, manager):
     assert window.boot_selector is selector
     assert not window.boot_selector.isEnabled()
     assert not window.analyze_button.isEnabled()
-    assert window.boot_selector.currentText() == "Current boot · placeholder"
+    assert window.boot_selector.currentText() == "Loading boot sessions…"
     assert window.size() == size
 
 
@@ -338,6 +338,8 @@ REQUIRED_KEYS = {
     "input.bg",
     "input.selection",
     "input.selection_text",
+    "evidence.highlight",
+    "evidence.highlight_text",
     "scrollbar.track",
     "scrollbar.thumb",
     "scrollbar.thumb_hover",
@@ -395,6 +397,7 @@ def test_text_contrast_meets_wcag_aa(theme_tokens):
         (t["nav_selected_text"], t["bg.nav_selected"]),
         (t["text.primary"], t["input.bg"]),
         (t["input.selection_text"], t["input.selection"]),
+        (t["evidence.highlight_text"], t["evidence.highlight"]),
         (t["tooltip.text"], t["tooltip.bg"]),
     ]
     for name in ("critical", "warning", "notice", "info"):
