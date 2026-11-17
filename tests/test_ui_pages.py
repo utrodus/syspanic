@@ -3,13 +3,16 @@
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QImage
 from PySide6.QtWidgets import QLabel, QPlainTextEdit
 
 from syspanic.collectors.demo import DEMO_CURRENT_BOOT_ID, DEMO_PREVIOUS_BOOT_ID, DemoCollector
 from syspanic.domain.enums import Severity, SourceState
 from syspanic.domain.models import BootInfo
 from syspanic.report.markdown import NO_FINDINGS_TEXT
+from syspanic.ui import theme as theme_mod
 from syspanic.ui.pages import EvidencePage, OverviewPage, ReportPage, SystemInfoPage, TimelinePage
 from syspanic.ui.widgets import PageHeader
 
@@ -359,6 +362,47 @@ def test_overview_boot_popup_short_list_not_clamped(qapp):
     combo.hidePopup()
     qapp.processEvents()
     page.close()
+
+
+@pytest.mark.parametrize(
+    "theme", [theme_mod.Theme.LIGHT, theme_mod.Theme.DARK], ids=["light", "dark"]
+)
+def test_overview_boot_popup_scrollers_themed(qapp, theme):
+    saved_theme = theme_mod.current_theme()
+    saved_qss = qapp.styleSheet()
+    theme_mod.apply_theme(qapp, theme)
+    try:
+        page = OverviewPage()
+        page.set_boots(make_many_boots(30))
+        page.resize(1200, 900)
+        page.show()
+        qapp.processEvents()
+        combo = page.boot_selector
+        combo.showPopup()
+        qapp.processEvents()
+        view = combo.view()
+        scrollbar = view.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum() // 2)
+        qapp.processEvents()
+        image = view.window().grab().toImage().convertToFormat(QImage.Format.Format_RGB32)
+        data = bytes(image.constBits())
+        stride = image.bytesPerLine()
+        width = image.width()
+        for y in range(image.height()):
+            row = data[y * stride : (y + 1) * stride]
+            black = sum(
+                1
+                for x in range(width)
+                if row[x * 4] < 24 and row[x * 4 + 1] < 24 and row[x * 4 + 2] < 24
+            )
+            assert black <= width // 2, f"unpainted black band at popup row {y}"
+        assert image.pixelColor(2, 2) == QColor(theme_mod.tokens()["bg.elevated"])
+        combo.hidePopup()
+        qapp.processEvents()
+        page.close()
+    finally:
+        theme_mod.apply_theme(qapp, saved_theme)
+        qapp.setStyleSheet(saved_qss)
 
 
 def test_evidence_truncation_and_tail_badges(qapp, demo_report):
