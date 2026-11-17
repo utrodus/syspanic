@@ -1,6 +1,8 @@
 """Token-based redaction over rendered text (docs/02 §11). Best-effort by design."""
 
+import getpass
 import re
+import socket
 
 _TOKEN = re.compile(r"[A-Z]+_\d+")
 _CRED_ASSIGN = re.compile(r"\b(password|passwd|token|api_key|secret)(\s*[=:]\s*)([^\s,;`|]+)")
@@ -21,6 +23,19 @@ _SERIAL_TOKEN = re.compile(r"\b[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-SERIAL-[A-Za-z0-9-
 
 def _boundary(seed: str) -> re.Pattern:
     return re.compile(rf"(?<![A-Za-z0-9_-]){re.escape(seed)}(?![A-Za-z0-9_-])")
+
+
+def local_identity_seeds() -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Local hostname/username seeds per docs/02 §11; empty when unavailable."""
+    try:
+        hostname = socket.gethostname()
+    except OSError:
+        hostname = ""
+    try:
+        username = getpass.getuser()
+    except (KeyError, OSError):
+        username = ""
+    return ((hostname,) if hostname else ()), ((username,) if username else ())
 
 
 def sanitize(text: str, *, hostnames=(), usernames=()) -> tuple[str, dict[str, int]]:

@@ -8,7 +8,7 @@ from syspanic.diagnostics.coverage import (
 )
 from syspanic.domain.enums import SourceState
 from syspanic.domain.models import IncidentReport
-from syspanic.report.sanitize import sanitize
+from syspanic.report.sanitize import local_identity_seeds, sanitize
 
 _COUNTS_PLACEHOLDER = "@@REDACTION_COUNTS@@"
 _READ_STATES = (SourceState.AVAILABLE, SourceState.TRUNCATED, SourceState.EMPTY)
@@ -254,13 +254,19 @@ def _render_raw(report: IncidentReport) -> str:
 def render_report_with_counts(
     report: IncidentReport, *, hostnames=(), usernames=()
 ) -> tuple[str, dict[str, int]]:
-    host_seeds = set(hostnames)
+    local_hosts, local_users = local_identity_seeds()
+    host_seeds = set(hostnames) | set(local_hosts)
     for item in report.evidence:
         hostname = item.provenance.get("_HOSTNAME")
         if hostname:
             host_seeds.add(hostname)
+    user_seeds = tuple(dict.fromkeys((*usernames, *local_users)))
     raw = _render_raw(report)
-    sanitized, counts = sanitize(raw, hostnames=sorted(host_seeds), usernames=usernames)
+    sanitized, counts = sanitize(
+        raw,
+        hostnames=sorted(host_seeds, key=lambda h: (-len(h), h)),
+        usernames=user_seeds,
+    )
     if counts:
         parts = []
         for kind, count in sorted(counts.items()):
