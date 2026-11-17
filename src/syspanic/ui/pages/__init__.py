@@ -2,7 +2,7 @@
 
 from datetime import UTC
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
     QComboBox,
@@ -248,6 +248,26 @@ def _status_chip(report) -> str:
     return "Insufficient evidence"
 
 
+class BootSelector(QComboBox):
+    # Qt 6.12 showPopup() sizes the container to all rows, ignoring maxVisibleItems.
+    def showPopup(self):
+        super().showPopup()
+        view = self.view()
+        row = view.sizeHintForRow(0)
+        if row <= 0:
+            return
+        container = view.window()
+        cap = row * self.maxVisibleItems() + (container.height() - view.height())
+        if container.height() <= cap:
+            return
+        delta = container.height() - cap
+        upward = container.y() < self.mapToGlobal(QPoint(0, 0)).y()
+        container.resize(container.width(), cap)
+        if upward:
+            container.move(container.x(), container.y() + delta)
+        container.layout().activate()
+
+
 class OverviewPage(ScrollPage):
     evidenceRequested = Signal(str)
     coverageRequested = Signal()
@@ -280,8 +300,10 @@ class OverviewPage(ScrollPage):
         session.vbox.addLayout(field)
         row = QHBoxLayout()
         row.setSpacing(12)
-        self.boot_selector = QComboBox()
+        self.boot_selector = BootSelector()
         self.boot_selector.setMinimumWidth(320)
+        self.boot_selector.setMaxVisibleItems(8)
+        self.boot_selector.view().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.boot_selector.addItem("Loading boot sessions…")
         self.boot_selector.setEnabled(False)
         self.analyze_button = QPushButton("Analyze")
