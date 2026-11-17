@@ -2,7 +2,7 @@
 
 Persistent, concise context for coding sessions. Subordinate to the approved Source of Truth (SoT);
 never overrides it. Detailed task progress lives in [docs/implementation-tracker.md](docs/implementation-tracker.md).
-Last updated: 2026-11-17 (M3–M8 VERIFIED — user confirmed full integrated manual QA PASS A1–A18/B1–B6/C1–C4 after QA fixes #1–#5; automated 533/533, Qt-heavy subset exit 0 clean, full-run teardown abort classified as harness GC artifact; M4–M8 uncommitted, grouped commit-and-push plan pending approval; M3 pushed `46b8572`; M9 NOT authorized).
+Last updated: 2026-11-17 (M3–M8 VERIFIED — user confirmed full integrated manual QA PASS A1–A18/B1–B6/C1–C4 after QA fixes #1–#5; automated 533/533, Qt-heavy subset exit 0 clean, full-run teardown abort classified as harness GC artifact; M4–M8 uncommitted, grouped commit-and-push plan pending approval; M3 pushed `46b8572`; M9 NOT authorized). Post-QA boot-popup cap (option A) IMPLEMENTED_UNVERIFIED at 535/535; its manual QA pending.
 
 ## 1. Current Project Context
 
@@ -27,6 +27,7 @@ User-approved 2026-11-16 (authoritative references in parentheses):
 - Decision log D-01…D-13 in docs/02 §15 is approved.
 - **Visual refinement (user-approved 2026-11-16, docs/03 revision):** "Modern Diagnostic Workstation" — canvas #101115, sidebar #16181E, surface #191B22, elevated #23262F, border #30343D, primary #E7EBF1, secondary #98A1AF, accent #62D8B2, nav-selected #294238; Inter→Noto Sans; heading 26–28/section 16/body 14/meta 12px; cards 12px radius, controls/nav 8px; ≈224px sidebar with QPainter outline icons (no emoji/remote); no top header bar — session controls live in the Overview "Analysis session" card; idle headline "Every crash leaves a clue."; no fabricated data. T-002 only; M0 behavior/entry points preserved.
 - **Dual theme (user-approved 2026-11-16, docs/03 §2/§2.1, docs/02 D-14):** Dark (default, palette unchanged) + Soft Light; one centralized `ThemeManager` in `ui/theme.py` (QPalette + shared QSS from per-theme tokens, `themeChanged` signal); compact sidebar Light/Dark segmented switcher (sun/moon icons) above the privacy indicator; immediate in-place switching preserving page/state. **Only persistence exception:** QSettings `SysPanic`/`SysPanic`, key `appearance/theme` = light|dark; missing/invalid/unreadable → Dark; write failure never blocks switching; demo = deterministic Dark + session-only MemorySettings; tests use isolated stores (tmp INI / XDG_CONFIG_HOME). Light secondary/muted/accent/nav-text/severity values deepened for WCAG AA (enforced by contrast tests). No settings page, no system-theme sync.
+- **Boot popup cap (user-approved 2026-11-17, option A):** Overview boot selector popup limited to 8 visible rows with the themed scrollbar (`ScrollBarAsNeeded`); short lists keep natural height; day-grouping and filter-as-you-type rejected as overkill. Implemented as `BootSelector.showPopup()` container clamp because Qt 6.12 ignores `maxVisibleItems`. Post-M8-verification refinement; own manual QA pending, then joins the commit plan.
 
 ## 3. Pending Decisions
 
@@ -34,6 +35,7 @@ No pending product decisions. Remaining gates are procedural:
 
 - Manual QA complete: user confirmed the full integrated §4 script PASS (A1–A18, B1–B6, C1–C4) 2026-11-17 → M3–M8 `VERIFIED`.
 - Commit-and-push plan for the uncommitted M4–M8 work + QA fixes #1–#5 + SoT updates: presented for approval (target `origin/main`); no repository writes before approval.
+- Manual QA of the post-QA boot-popup cap refinement (option A): pending; the refinement joins the commit plan once approved.
 - M9 authorization: not given; stop at the M8 boundary.
 
 ## 4. Environment Notes
@@ -74,6 +76,7 @@ Never include real host logs, identifiers, credentials, or dumps in this file.
 - Real-tool contracts (M8 QA fix #2): journalctl has NO `--kernel` option (systemd 259: only `-k/--dmesg`, which implies current boot). Kernel slice uses the explicit match `journalctl --boot=<id> _TRANSPORT=kernel …` — no implicit boot semantics, matches the trusted-provenance model. Lesson: fake-runner tests verify argv shape, not option validity — when a command is prescribed in SoT, verify it against the real tool's `--help` (help text only, never log content) before trusting it; both QA bugs were invisible to synthetic fixtures.
 - Page layout pattern (M8 QA fix #3): every ScrollPage content layout must end with `addStretch(1)` and add `results_wrap` WITHOUT a stretch factor (Timeline is the reference). Stretch on a hidden `results_wrap` leaves no stretch item in idle, so QScrollArea widgetResizable surplus height stretches PageHeader (title/subtitle spread apart) and the empty card. Geometry regression tests compare header height + header→content gap against TimelinePage offscreen (resize 1200×900 + show + processEvents).
 - Evidence highlight (M8 QA fix #4, A9/A10): jump-to-evidence must highlight the WHOLE line, not just the ID substring — `viewer.find(id)` selects only the ID and fades when the viewer lacks focus. Use a persistent `QTextEdit.ExtraSelection` (PySide6 exposes ExtraSelection on QTextEdit, NOT QPlainTextEdit) with `cursor.select(LineUnderCursor)` and token colors `evidence.highlight`/`evidence.highlight_text` (soft yellow, both themes, WCAG AA ≥4.5). Re-apply at the end of `_render_group` and on `themeChanged` (MainWindow→`evidence_page.refresh_highlight()`); clear when the ID is absent. ExtraSelections are code-side, so the QSS-token-only test is unaffected; the new tokens are in REQUIRED_KEYS + the contrast pair.
+- Qt 6.12 combo popup (boot cap refinement): `showPopup()` sizes the container to ALL rows, ignoring `maxVisibleItems`; the combo view's default vertical scrollbar policy is `AlwaysOff`; QListView scrolls in row units; `indexAt`/`visualRect` use viewport coordinates. Cap deterministically in a `showPopup()` override: clamp container to `row height × maxVisibleItems + (container.height() − view.height())`, re-anchor the bottom edge when the popup opens upward, then `layout().activate()`; set `ScrollBarAsNeeded` so the themed scrollbar shows only when capped. Offscreen popup probes need `show()` + `showPopup()` + `processEvents()`.
 
 ## 6. Known Issues and Blockers
 
@@ -87,7 +90,7 @@ No other actionable issues.
 ## 7. Current Handoff
 
 - **Last completed work:** M4–M8 (T-007…T-023) under the user goal 2026-11-16 — system/artifact collectors, demo fixtures, engine + 27 core rules + timeline + coverage, sanitizer + Markdown renderer, orchestrator + QThread worker/controller + five real pages + state matrix/banners/export. `VERIFIED` 2026-11-17: TDD RED→GREEN, ruff clean, 533/533 offscreen tests after five QA fixes, `--version` OK, and the user confirmed the full integrated manual QA script PASS. All M4–M8 changes uncommitted.
-- **Active milestone/task:** none — M3–M8 `VERIFIED`; awaiting commit-plan approval. M9 not authorized.
+- **Active milestone/task:** boot-popup cap refinement (option A, post-QA) `IMPLEMENTED_UNVERIFIED` — automated 535/535, ruff clean; popup manual QA pending. M3–M8 remain `VERIFIED` for the QA-confirmed scope; commit plan pending approval. M9 not authorized.
 - **Next actionable step:** present the grouped ("pilah") Conventional Commit plan for all uncommitted M4–M8 work + QA fixes #1–#5 + SoT D-15/highlight + tracker/Memory (target `origin/main`); commit/push only after explicit approval. M9 (T-024–T-026) requires separate authorization.
 - **Required approvals:** commit-and-push plan (after QA PASS — now); M9 authorization. Commit approval ≠ M9 go.
 - **Relevant files:** src/syspanic/collectors/{system,artifacts,demo,orchestrator,metadata}.py, src/syspanic/diagnostics/, src/syspanic/report/{sanitize,markdown}.py, src/syspanic/ui/{worker,controller,table_models,main_window}.py, ui/pages/, ui/widgets/, ui/theme.py; tests/test_{system,artifacts,demo,registry,engine,rules_*,timeline,coverage,sanitize,markdown,orchestrator,controller,timeline_model,report_page,ui_pages,ui_integration}.py.
