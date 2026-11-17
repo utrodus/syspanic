@@ -257,6 +257,8 @@ QComboBox QAbstractItemView {{
     selection-color: {t['input.selection_text']};
     outline: none;
 }}
+/* Private popup scrollers inherit the transparent base rule and would show black. */
+QComboBoxPrivateScroller {{ background: {t['bg.elevated']}; }}
 QLineEdit {{
     background: {t['input.bg']}; color: {t['text.primary']};
     border: 1px solid {t['border.default']}; border-radius: 8px; min-height: 34px; padding: 0 12px;
