@@ -65,7 +65,7 @@ def kernel_argv(boot_id: str) -> list[str]:
     return [
         "journalctl",
         f"--boot={boot_id}",
-        "--kernel",
+        "_TRANSPORT=kernel",
         "--output=json",
         "--no-pager",
         "-n",
@@ -93,7 +93,7 @@ def decode_message(raw: object) -> str:
         text = str(raw)
     text = _CSI_RE.sub("", text)
     text = _OSC_RE.sub("", text)
-    text = "".join(c for c in text if (ord(c) >= 32 or c in "\n\t") and ord(c) != 127)
+    text = "".join(c for c in text if ord(c) >= 32 and ord(c) != 127)
     return text[:MAX_MESSAGE_CHARS]
 
 

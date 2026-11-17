@@ -61,8 +61,25 @@ def test_ansi_sequences_stripped():
     assert decode_message("x\x1b]0;title\x07y") == "xy"
 
 
-def test_control_chars_stripped_except_newline_tab():
-    assert decode_message("a\x00b\x01c\nd\te\x7f") == "abc\nd\te"
+def test_control_chars_stripped_including_newline_tab():
+    assert decode_message("a\x00b\x01c\nd\te\x7f") == "abcde"
+
+
+def test_tab_newline_messages_pass_report_validation():
+    from rule_fixtures import make_bundle
+    from syspanic.diagnostics import engine
+
+    text = "\n".join(
+        [
+            jline("c1", "audit: type=1\tpath=/tmp\tx"),
+            jline("c2", "first line\nsecond line", ts_us=T0_US + 1000),
+        ]
+    )
+    parsed = parse_journal_slice(text, SOURCE_JOURNAL_KERNEL)
+    evidence = to_evidence(parsed.entries, CUR)
+    report = engine.analyze(make_bundle(evidence))
+    for item in report.evidence:
+        assert not any(ord(c) < 32 or ord(c) == 127 for c in item.message)
 
 
 def test_message_capped_at_1000():

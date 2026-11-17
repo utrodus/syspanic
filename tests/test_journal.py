@@ -126,7 +126,7 @@ def test_argv_is_fixed_and_undashed():
     assert kernel_argv(CUR) == [
         "journalctl",
         f"--boot={CUR}",
-        "--kernel",
+        "_TRANSPORT=kernel",
         "--output=json",
         "--no-pager",
         "-n",
