@@ -36,4 +36,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     theme_manager.start()
     window = MainWindow(demo=args.demo, theme_manager=theme_manager)
     window.show()
+    window.begin()
     return app.exec()

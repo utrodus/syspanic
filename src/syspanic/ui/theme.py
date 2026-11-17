@@ -46,6 +46,8 @@ DARK_TOKENS = {
     "input.bg": "#23262F",
     "input.selection": "#294238",
     "input.selection_text": "#E7EBF1",
+    "evidence.highlight": "#E3D08A",
+    "evidence.highlight_text": "#2B2410",
     "scrollbar.track": "transparent",
     "scrollbar.thumb": "#30343D",
     "scrollbar.thumb_hover": "#3A3F4A",
@@ -95,6 +97,8 @@ LIGHT_TOKENS = {
     "input.bg": "#F0F3EF",
     "input.selection": "#D8EAE2",
     "input.selection_text": "#26332E",
+    "evidence.highlight": "#F4E6A2",
+    "evidence.highlight_text": "#33290D",
     "scrollbar.track": "transparent",
     "scrollbar.thumb": "#B4BFB5",
     "scrollbar.thumb_hover": "#97A69B",
@@ -184,6 +188,20 @@ QLabel#chip {{
     background: {t['bg.elevated']}; color: {t['text.secondary']};
     border: 1px solid {t['border.default']};
 }}
+QLabel#countCritical, QLabel#countWarning, QLabel#countNotice, QLabel#countInfo {{
+    font-size: 24px; font-weight: 600;
+}}
+QLabel[zero="true"] {{ color: {t['text.muted']}; }}
+QLabel#coverageStrip {{ font-weight: 600; }}
+QLabel#deniedPanel {{
+    background: {t['bg.elevated']}; color: {t['text.secondary']};
+    border: 1px solid {t['border.default']}; border-radius: 8px; padding: 10px 12px;
+}}
+QLabel#excerpt {{
+    background: {t['bg.code']}; border: 1px solid {t['border.default']};
+    border-radius: 6px; padding: 6px 8px;
+}}
+QPushButton#chip {{ min-height: 28px; padding: 0 10px; }}
 QListWidget#nav {{ background: transparent; border: none; outline: none; }}
 QListWidget#nav::item {{
     height: 42px; border-radius: 8px; color: {t['text.secondary']}; padding-left: 12px;

@@ -150,3 +150,33 @@ def capability_card(icon: str, title: str, copy: str) -> Card:
     row.addLayout(text, 1)
     card.vbox.addLayout(row)
     return card
+
+
+_SEVERITY_OBJECT = {
+    "critical": "severityCritical",
+    "warning": "severityWarning",
+    "notice": "severityNotice",
+    "info": "severityInfo",
+}
+
+
+class SeverityBadge(QLabel):
+    def __init__(self, severity, parent: QWidget | None = None):
+        super().__init__(severity.value.capitalize(), parent)
+        self.setObjectName(_SEVERITY_OBJECT[severity.value])
+
+
+class NoticeBar(QLabel):
+    """Inline state banner (docs/03 §6): info chip, warning, or error tint."""
+
+    def __init__(self, text: str = "", kind: str = "info", parent: QWidget | None = None):
+        super().__init__(text, parent)
+        self.setObjectName(
+            {"info": "chip", "warning": "stateWarning", "error": "stateError"}[kind]
+        )
+        self.setWordWrap(True)
+        self.hide()
+
+    def show_message(self, text: str) -> None:
+        self.setText(text)
+        self.show()
