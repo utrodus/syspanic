@@ -28,3 +28,4 @@ Thumbs.db
 # Real crash evidence must never be committed (synthetic fixtures are allowed)
 *.vmcore
 vmcore-dmesg.txt
+!src/syspanic/demo_data/vmcore-dmesg.txt

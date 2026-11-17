@@ -1,0 +1,5 @@
+BOOT_ID=0f1e2d3c4b5a69788796a5b4c3d2e1f0
+Linux version 6.17.8-300.fc44.x86_64 (mockbuild@fedora) #1 SMP PREEMPT_DYNAMIC
+2026-11-10T08:29:50+00:00 amdgpu 0000:0a:00.0: amdgpu: VM fault (0x0000000000000000) detected
+2026-11-10T08:29:55+00:00 Oops: 0000 [#1] SMP NOPTI
+2026-11-10T08:29:58+00:00 Kernel panic - not syncing: Fatal exception
