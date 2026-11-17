@@ -1,12 +1,14 @@
 """T-018/T-019/T-020/T-021: page rendering from a real IncidentReport (offscreen)."""
 
 from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel, QPlainTextEdit
 
 from syspanic.collectors.demo import DEMO_CURRENT_BOOT_ID, DEMO_PREVIOUS_BOOT_ID, DemoCollector
 from syspanic.domain.enums import Severity, SourceState
+from syspanic.domain.models import BootInfo
 from syspanic.report.markdown import NO_FINDINGS_TEXT
 from syspanic.ui.pages import EvidencePage, OverviewPage, ReportPage, SystemInfoPage, TimelinePage
 from syspanic.ui.widgets import PageHeader
@@ -14,6 +16,20 @@ from syspanic.ui.widgets import PageHeader
 
 def make_boots():
     return DemoCollector().boots()
+
+
+def make_many_boots(count):
+    base = datetime(2026, 11, 16, 12, 0, tzinfo=UTC)
+    return tuple(
+        BootInfo(
+            index=-i,
+            boot_id=f"{i:032x}",
+            is_current=i == 0,
+            first_entry=base - timedelta(days=i),
+            last_entry=base - timedelta(days=i) + timedelta(hours=2),
+        )
+        for i in range(count)
+    )
 
 
 def test_overview_set_boots_labels(qapp):
@@ -299,6 +315,50 @@ def test_boot_refresh_preserves_selection(qapp):
     selected = page.selected_boot_id()
     page.set_boots(boots)
     assert page.selected_boot_id() == selected
+
+
+def test_overview_boot_popup_capped_at_eight_rows(qapp):
+    page = OverviewPage()
+    page.set_boots(make_many_boots(30))
+    combo = page.boot_selector
+    assert combo.count() == 30
+    assert combo.maxVisibleItems() == 8
+    page.resize(1200, 900)
+    page.show()
+    qapp.processEvents()
+    combo.showPopup()
+    qapp.processEvents()
+    view = combo.view()
+    row_height = view.sizeHintForRow(0)
+    assert view.height() <= 8 * row_height + 8
+    scrollbar = view.verticalScrollBar()
+    assert scrollbar.isVisible()
+    scrollbar.setValue(scrollbar.maximum())
+    qapp.processEvents()
+    last = view.visualRect(view.model().index(combo.count() - 1, 0))
+    assert last.top() >= 0
+    assert last.bottom() <= view.viewport().height()
+    combo.hidePopup()
+    qapp.processEvents()
+    page.close()
+
+
+def test_overview_boot_popup_short_list_not_clamped(qapp):
+    page = OverviewPage()
+    page.set_boots(make_boots())
+    combo = page.boot_selector
+    page.resize(1200, 900)
+    page.show()
+    qapp.processEvents()
+    combo.showPopup()
+    qapp.processEvents()
+    view = combo.view()
+    row_height = view.sizeHintForRow(0)
+    assert view.height() >= combo.count() * row_height
+    assert not view.verticalScrollBar().isVisible()
+    combo.hidePopup()
+    qapp.processEvents()
+    page.close()
 
 
 def test_evidence_truncation_and_tail_badges(qapp, demo_report):
