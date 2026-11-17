@@ -14,14 +14,13 @@ privileges, or pretending to diagnose hardware it cannot test.
 
 ## Project status
 
-**Early development — v0.1.0 in progress.** The runnable desktop shell (milestone **M0**) is
-implemented: a five-page window with designed idle/empty states and two themes — Dark (default)
-and Soft Light — switched globally from the sidebar and remembered between sessions. The
-dual-theme refinement passed manual visual QA (2026-11-16); M0 is verified. The
-diagnostic engine, collectors, timeline, evidence rendering, sanitization, and report export
-are **not yet implemented**. The boot selector and **Analyze** button are disabled placeholders,
-and `--demo` currently shows a persistent demo banner over those placeholder pages (packaged
-synthetic fixtures and an end-to-end demo arrive in **M5**).
+**Early development — v0.1.0 in progress.** The desktop shell (milestone **M0**) and the full
+diagnostic pipeline (M3–M8) are implemented: boot enumeration and journal collection, system
+profile and crash-artifact metadata, the 27-core-rule diagnostic engine, timeline and coverage
+views, sanitization, and Markdown report preview/copy/export. The boot selector and **Analyze**
+button are functional, and `--demo` runs the complete workflow on packaged synthetic fixtures.
+M0 and M3–M8 passed manual QA (2026-11-17); M1/M2 are pure logic with automated checks only.
+Hardening and the release candidate (**M9**) have not started.
 
 See the [implementation tracker](docs/implementation-tracker.md) for the authoritative progress
 record and the [roadmap](#roadmap) below for what comes next. Nothing here presents fake
@@ -64,8 +63,9 @@ SysPanic is built to be safe to run on a personal machine:
 
 - **Local only.** No network, no telemetry, no cloud, no AI APIs, no external uploads. Analysis
   never leaves your machine.
-- **Read-only.** The only disk write is a report you explicitly choose to save. No temp files,
-  no log persistence, no system configuration changes.
+- **Read-only.** The only disk writes are a report you explicitly choose to save and the local
+  appearance preference (theme). No temp files, no log persistence, no system configuration
+  changes.
 - **Never root.** No `sudo`, no privilege escalation, no polkit, no journal/group/permission
   changes. Read access is whatever your user already has; denial is a first-class, explained
   state.
@@ -95,8 +95,7 @@ One screen per question, in a single window:
 | **System Information** | What context applies? | OS/kernel, CPU, memory, GPUs, firmware/board — always labeled "collected now", never crash-time |
 | **Report** | What can I share? | A sanitized Markdown report with bounded excerpts, coverage, limitations, and a redaction summary |
 
-The shell currently shows designed idle/empty states for each page; real content lands with the
-collection and GUI-integration milestones (M3–M8).
+Each page keeps its designed idle/empty state until a boot session is analyzed.
 
 ## Requirements
 
@@ -125,7 +124,8 @@ PYTHONPATH=src .venv/bin/python -m syspanic
   PYTHONPATH=src .venv/bin/python -m syspanic --demo
   ```
 
-  Until M5 this shows the demo banner over the placeholder pages.
+  Demo mode analyzes packaged synthetic fixtures end-to-end, labels every report as demo data,
+  and never probes the host.
 
 - **Version** (Qt-free):
 
@@ -150,10 +150,10 @@ reproducibility; `pyproject.toml` remains the package metadata source.
 | Shortcut | Action | Availability |
 |---|---|---|
 | Ctrl+1 … Ctrl+5 | Switch page | Active now |
-| Ctrl+R | Analyze / retry | With collection (M8) |
-| Ctrl+E | Export report | With report export (M8) |
-| F5 | Refresh boot list | With boot enumeration (M3) |
-| Esc | Cancel collection | With collection (M8) |
+| Ctrl+R | Analyze / retry | Active now |
+| Ctrl+E | Export report | Active now |
+| F5 | Refresh boot list | Active now |
+| Esc | Cancel collection | Active now |
 
 Changing the boot selector never starts analysis automatically; Analyze is single-flight.
 
@@ -174,12 +174,12 @@ Status is recorded in the [tracker](docs/implementation-tracker.md).
 | M0 | Runnable desktop shell | Verified |
 | M1 | Domain model + `validate_report()` | Implemented |
 | M2 | Safe bounded command runner | Implemented |
-| M3 | Boot enumeration + journal collection | Implemented |
-| M4 | System profile + crash artifacts | Planned |
-| M5 | Demo fixtures + demo collector | Planned |
-| M6 | Diagnostic engine (27 core rules) | Planned |
-| M7 | Sanitization + Markdown report | Planned |
-| M8 | GUI integration | Planned |
+| M3 | Boot enumeration + journal collection | Verified |
+| M4 | System profile + crash artifacts | Verified |
+| M5 | Demo fixtures + demo collector | Verified |
+| M6 | Diagnostic engine (27 core rules) | Verified |
+| M7 | Sanitization + Markdown report | Verified |
+| M8 | GUI integration | Verified |
 | M9 | Hardening + release candidate | Planned |
 
 The rule catalog has 29 IDs; the v0.1.0 release-blocking core is 27, with ART-002/ART-003
