@@ -161,3 +161,14 @@ def test_empty_copy_visible_at_minimum_size(window):
     copy = overview.findChild(QLabel, "emptyCopy")
     assert copy.isVisibleTo(overview)
     assert copy.height() >= copy.fontMetrics().height()
+
+
+def test_session_cleanup_destroys_leftover_widgets(qapp):
+    from conftest import _destroy_leftover_widgets
+
+    leaked = MainWindow(demo=True)
+    leaked.show()
+    QApplication.processEvents()
+    assert leaked in qapp.topLevelWidgets()
+    _destroy_leftover_widgets(qapp)
+    assert not qapp.topLevelWidgets()

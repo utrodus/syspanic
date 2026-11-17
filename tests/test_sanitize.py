@@ -1,8 +1,35 @@
 """T-015: token redaction — seeds, stable numbering, retention, idempotence."""
 
-from syspanic.report.sanitize import sanitize
+import getpass
+import socket
+
+from syspanic.report.sanitize import local_identity_seeds, sanitize
 
 BOOT_ID = "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+
+
+def test_local_identity_seeds_from_local_lookup(monkeypatch):
+    monkeypatch.setattr(socket, "gethostname", lambda: "seed-host")
+    monkeypatch.setattr(getpass, "getuser", lambda: "seed-user")
+    assert local_identity_seeds() == (("seed-host",), ("seed-user",))
+
+
+def test_local_identity_seeds_graceful_on_oserror(monkeypatch):
+    def deny(*args, **kwargs):
+        raise OSError("identity unavailable")
+
+    monkeypatch.setattr(socket, "gethostname", deny)
+    monkeypatch.setattr(getpass, "getuser", deny)
+    assert local_identity_seeds() == ((), ())
+
+
+def test_local_identity_seeds_graceful_on_keyerror_and_empty(monkeypatch):
+    def no_user():
+        raise KeyError("no password database entry")
+
+    monkeypatch.setattr(socket, "gethostname", lambda: "")
+    monkeypatch.setattr(getpass, "getuser", no_user)
+    assert local_identity_seeds() == ((), ())
 
 
 def test_hostname_seeds_numbered_stably():

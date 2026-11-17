@@ -27,7 +27,22 @@ def test_pnc002_oops_and_bug_variants():
         "kernel BUG at mm/slub.c:372!",
         "invalid opcode: 0000 [#1] SMP",
     ):
-        assert "PNC-002" in ids(panic.evaluate(make_bundle([entry(message, index=0)])))
+        findings = panic.evaluate(make_bundle([entry(message, index=0)]))
+        assert "PNC-002" in ids(findings)
+        finding = next(f for f in findings if f.rule_id == "PNC-002")
+        assert finding.severity is Severity.WARNING
+
+
+def test_pnc002_warning_distinct_from_fatal_panic():
+    entries = [
+        entry("Oops: 0000 [#1] SMP NOPTI", index=0),
+        entry("Kernel panic - not syncing: Fatal exception", index=1),
+    ]
+    findings = {f.rule_id: f for f in panic.evaluate(make_bundle(entries))}
+    assert findings["PNC-001"].severity is Severity.CRITICAL
+    assert findings["PNC-002"].severity is Severity.WARNING
+    assert "may recover or precede a panic" in findings["PNC-002"].interpretation
+    assert "lead, not a verdict" in findings["PNC-002"].interpretation
 
 
 def test_pnc003_lockup_and_stalls():

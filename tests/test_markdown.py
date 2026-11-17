@@ -1,6 +1,7 @@
 """T-016: Markdown report contract — sections, bounds, redaction, determinism."""
 
 import re
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -14,8 +15,9 @@ from syspanic.collectors.demo import (
 )
 from syspanic.constants import SOURCE_JOURNAL_SYSTEM
 from syspanic.diagnostics import engine
+from syspanic.domain.enums import Severity
 from syspanic.domain.models import BANNED_TERMS, MAX_TIMELINE_EVENTS
-from syspanic.report.markdown import render_report
+from syspanic.report.markdown import render_report, render_report_with_counts
 from syspanic.report.sanitize import sanitize
 
 NOW = datetime(2026, 11, 16, 12, 0, tzinfo=UTC)
@@ -263,3 +265,70 @@ def test_summary_counts_match_findings(demo_reports):
         section = markdown.split("## Summary")[1].split("## Evidence coverage")[0]
         critical = sum(1 for f in report.findings if f.severity.value == "critical")
         assert f"Critical: {critical}" in section
+
+
+def test_local_identity_seeds_redact_outside_metadata(monkeypatch):
+    monkeypatch.setattr(
+        "syspanic.report.markdown.local_identity_seeds",
+        lambda: (("seed-host",), ("seed-user",)),
+    )
+    report = engine.analyze(
+        make_bundle([entry("Oops: 0000 [#1] SMP seed-user seed-host", 0)]), now=NOW
+    )
+    text = render_report(report)
+    assert "seed-user" not in text
+    assert "seed-host" not in text
+    assert "HOST_1" in text
+    assert "USER_1" in text
+
+
+def test_provenance_hostname_seeds_without_explicit_kwargs(monkeypatch):
+    monkeypatch.setattr(
+        "syspanic.report.markdown.local_identity_seeds", lambda: ((), ())
+    )
+    report = engine.analyze(
+        make_bundle(
+            [entry("Oops: 0000 [#1] SMP prov-host", 0, extra={"_HOSTNAME": "prov-host"})]
+        ),
+        now=NOW,
+    )
+    text = render_report(report)
+    assert "prov-host" not in text
+    assert "HOST_1" in text
+
+
+def test_synthetic_pipeline_end_to_end(monkeypatch):
+    monkeypatch.setattr(
+        "syspanic.report.markdown.local_identity_seeds",
+        lambda: (("pipeline-host",), ("pipeline-user",)),
+    )
+    bundle = DemoCollector().collect(DEMO_PREVIOUS_BOOT_ID)
+    extra = entry(
+        "Oops: 0000 [#2] SMP session pipeline-user on pipeline-host",
+        900,
+        boot_id=DEMO_PREVIOUS_BOOT_ID,
+        timestamp=datetime(2026, 11, 10, 8, 29, 56, tzinfo=UTC),
+    )
+    bundle = replace(bundle, entries=bundle.entries + (extra,))
+    report = engine.analyze(bundle, now=NOW)
+    text, counts = render_report_with_counts(report)
+    assert "Oops: 0000 [#2]" in text
+    assert "pipeline-user" not in text
+    assert "pipeline-host" not in text
+    assert counts["HOST"] == 1
+    assert counts["USER"] == 1
+    assert DEMO_PREVIOUS_BOOT_ID in text
+    pnc2 = next(f for f in report.findings if f.rule_id == "PNC-002")
+    assert pnc2.severity is Severity.WARNING
+    pnc1 = next(f for f in report.findings if f.rule_id == "PNC-001")
+    assert pnc1.severity is Severity.CRITICAL
+    again, counts2 = sanitize(
+        text, hostnames=(DEMO_HOSTNAME, "pipeline-host"), usernames=("pipeline-user",)
+    )
+    assert again == text
+    assert counts2 == {}
+    for leak in FAKE_IDENTIFIERS:
+        assert leak not in text, f"leaked: {leak}"
+    lowered = text.lower()
+    for term in BANNED_TERMS:
+        assert term not in lowered

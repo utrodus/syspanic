@@ -1,6 +1,5 @@
 """T-009: demo fixtures and DemoCollector — synthetic, no host probing."""
 
-import json
 import os
 import socket
 import subprocess
@@ -248,4 +247,9 @@ def test_fixture_files_are_packaged(demo):
     }
     packaged = {p.name for p in importlib.resources.files("syspanic.demo_data").iterdir()}
     assert names <= packaged
-    json.loads(importlib.resources.files("syspanic.demo_data").joinpath("boots.json").read_text())
+    resources = importlib.resources.files("syspanic.demo_data")
+    for name in sorted(names):
+        text = resources.joinpath(name).read_text(encoding="utf-8")
+        assert text.strip(), f"demo fixture {name} is empty"
+    vmd = resources.joinpath("vmcore-dmesg.txt").read_text(encoding="utf-8")
+    assert DEMO_PREVIOUS_BOOT_ID in vmd
