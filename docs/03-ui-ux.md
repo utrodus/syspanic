@@ -42,6 +42,8 @@ One semantic token set, two approved themes. **Dark is the default** when no val
 | `input.bg` | `#23262F` | `#F0F3EF` |
 | `input.selection` | `#294238` | `#D8EAE2` |
 | `input.selection_text` | `#E7EBF1` | `#26332E` |
+| `evidence.highlight` | `#E3D08A` | `#F4E6A2` |
+| `evidence.highlight_text` | `#2B2410` | `#33290D` |
 | `scrollbar.track` | transparent | transparent |
 | `scrollbar.thumb` | `#30343D` | `#B4BFB5` |
 | `scrollbar.thumb_hover` | `#3A3F4A` | `#97A69B` |
@@ -165,6 +167,7 @@ Two-pane splitter (left 280px):
 - Denied state panel: `System journal is not readable by this user. SysPanic will not request elevated privileges.` plus the collector's neutral hint.
 - Search with no matches: `No lines match "…".`
 - Copy uses normal text selection (Ctrl+C); no raw JSON view.
+- Jump-to-evidence (Overview finding link or Timeline double-click) highlights the **whole target line** with a soft-yellow background (`evidence.highlight` / `evidence.highlight_text` tokens, both themes) using a persistent extra selection, centers it in the viewer, and refreshes on theme switch. The highlight is independent of widget focus, so it stays visible after navigation (user-approved polish 2026-11-17).
 - Idle: heading + subtitle and a purposeful empty state (`No evidence yet.` with a concise explanation of sources and coverage states).
 
 ### 5.4 System Information
