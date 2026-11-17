@@ -53,7 +53,7 @@ def evaluate(bundle):
     finding = build_finding(
         "PNC-002",
         "panic",
-        Severity.CRITICAL,
+        Severity.WARNING,
         EvidenceStrength.DIRECT,
         oops_matches,
         title="Oops or kernel fault reported",
